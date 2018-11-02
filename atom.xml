@@ -88,6 +88,30 @@
   </entry>
   
   <entry>
+    <title>搭建Digital Ocean服务器遇到的问题</title>
+    <link href="http://yoursite.com/2018/04/18/DigitalOcean/"/>
+    <id>http://yoursite.com/2018/04/18/DigitalOcean/</id>
+    <published>2018-04-18T12:48:07.000Z</published>
+    <updated>2018-11-02T11:41:26.134Z</updated>
+    
+    <content type="html"><![CDATA[<p>经过几天的尝试，终于用Digital Ocean搞定了一个自己的服务器（VPS）。记录一下自己搭建过程遇到的问题，或许可以给他人带来帮助。</p><h3 id="什么是VPS？"><a href="#什么是VPS？" class="headerlink" title="什么是VPS？"></a>什么是VPS？</h3><hr><p>VPS主机（虚拟专用服务器）（”Virtual Private Server”，或简称 “VPS”）是利用虚拟服务器软件（如微软的Virtual Server、VMware的ESX server、SWsoft 的Virtuozzo）在一台物理服务器上创建多个相互隔离的小服务器。这些小服务器（VPS）本身就有自己操作系统，它的运行和管理与独立服务器完全相同。虚拟专用服务器确保所有资源为用户独享，让用户以虚拟主机的价格享受到独立主机的服务品质。</p><h3 id="搭建过程："><a href="#搭建过程：" class="headerlink" title="搭建过程："></a>搭建过程：</h3><hr><p>1.在Github上<a href="https://education.github.com/" target="_blank" rel="noopener">申请学生优惠包</a>（在校学生专享优惠,包括50美元DO抵用券）<br>2.使用优惠包和优惠码，申请Digital Ocean的账号，并且用PayPal付费5美元（如果你有Visa信用卡，这5美元也可以省下来）<br>3.申请服务器，选择服务器地址（我选的旧金山）并按照教程配置服务器。<br>4.然后你就可以把博客转移到服务器上或是用Shadowsocks上网了。</p><h3 id="遇到的问题："><a href="#遇到的问题：" class="headerlink" title="遇到的问题："></a>遇到的问题：</h3><hr><p>1.申请github学生优惠包没有通过。这一步要写上你的真实姓名，上传自己的学生证（上传学生证比邮箱管用），然后写一写申请理由（夸一夸GIthub），在第二次给我过了。<br>2.申请的学生优惠包点DO项目没有反应。于是给Github工作人员写了邮件反应，一天之内得到了回复，优惠码Get。<br><img src="/img/ghre.png" title="[github的回复]"><br>3.使用PayPal付款，用一般的储蓄卡也可以支付，虽然让填写CVC（信用卡的安全代码），我随意填写了个000就过了。<br>4.DO里不到填写优惠码的地方（据说学生优惠码和10美元优惠码只能用一个）于是再度邮件联系DO的工作人员反映问题，附上自己的优惠码。也是当天收到回复，把50美元加到账户里了。<br><img src="/img/send.png" title="[发给DO的ticket]"><br><img src="/img/dore.png" title="[DO的回复]"></p><h3 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h3><p><strong>学生优惠：</strong><br><a href="https://www.zhihu.com/question/31512990/answer/176503497" target="_blank" rel="noopener">https://www.zhihu.com/question/31512990/answer/176503497</a><br><strong>Digital Ocean搭建指南：</strong><br><a href="https://segmentfault.com/a/1190000011564797" target="_blank" rel="noopener">https://segmentfault.com/a/1190000011564797</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;经过几天的尝试，终于用Digital Ocean搞定了一个自己的服务器（VPS）。记录一下自己搭建过程遇到的问题，或许可以给他人带来帮助。&lt;/p&gt;
+&lt;h3 id=&quot;什么是VPS？&quot;&gt;&lt;a href=&quot;#什么是VPS？&quot; class=&quot;headerlink&quot; title=&quot;什
+      
+    
+    </summary>
+    
+    
+      <category term="web" scheme="http://yoursite.com/tags/web/"/>
+    
+  </entry>
+  
+  <entry>
     <title>A MAD A DAY（四月上）</title>
     <link href="http://yoursite.com/2018/04/15/AMADADAY1/"/>
     <id>http://yoursite.com/2018/04/15/AMADADAY1/</id>
