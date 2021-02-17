@@ -5,9 +5,9 @@
   <subtitle>夏月秋风</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://yoursite.com/"/>
+  <link href="http://www.eteluna.top/"/>
   <updated>2021-01-13T15:50:48.000Z</updated>
-  <id>http://yoursite.com/</id>
+  <id>http://www.eteluna.top/</id>
   
   <author>
     <name>[object Object]</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>What happen when （三）HTTP</title>
-    <link href="http://yoursite.com/2021/01/13/Whathappenwhen3/"/>
-    <id>http://yoursite.com/2021/01/13/Whathappenwhen3/</id>
+    <link href="http://www.eteluna.top/2021/01/13/Whathappenwhen3/"/>
+    <id>http://www.eteluna.top/2021/01/13/Whathappenwhen3/</id>
     <published>2021-01-13T15:51:00.000Z</published>
     <updated>2021-01-13T15:50:48.000Z</updated>
     
@@ -40,19 +40,51 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="web" scheme="http://yoursite.com/tags/web/"/>
+      <category term="web" scheme="http://www.eteluna.top/tags/web/"/>
     
-      <category term="网络" scheme="http://yoursite.com/tags/%E7%BD%91%E7%BB%9C/"/>
+      <category term="网络" scheme="http://www.eteluna.top/tags/%E7%BD%91%E7%BB%9C/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Java 实现命令行收发邮件</title>
+    <link href="http://www.eteluna.top/2020/09/09/email/"/>
+    <id>http://www.eteluna.top/2020/09/09/email/</id>
+    <published>2020-09-09T09:05:00.000Z</published>
+    <updated>2021-02-17T06:30:03.000Z</updated>
+    
+    <content type="html"><![CDATA[<div class="toc"><!-- toc --><ul><li><a href="#yi-dian-zi-you-jian-xi-tong-jia-gou">一、电子邮件系统架构</a></li><li><a href="#er-ge-shi">二、格式</a><ul><li><a href="#mime">MIME</a></li></ul></li><li><a href="#san-smtp">三、SMTP</a><ul><li><a href="#ming-ling">命令</a></li><li><a href="#zhuang-tai-ma">状态码</a></li><li><a href="#shi-li">示例</a></li></ul></li><li><a href="#si-pop3">四、POP3</a></li><li><a href="#wu-shi-yan-jie-guo-yu-dai-ma">五、实验结果与代码</a></li></ul><!-- tocstop --></div><p>需要自行完成一个研究，正好研究一下电子邮件相关协议。</p><h2><span id="yi-dian-zi-you-jian-xi-tong-jia-gou">一、电子邮件系统架构</span><a href="#yi-dian-zi-you-jian-xi-tong-jia-gou" class="header-anchor">.</a></h2><p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/mailsystem.png" alt=""></p><p>图片来源：<a href="http://blog.exsvc.cn/article/email-system-architecture.html" target="_blank" rel="noopener">易科博客</a></p><p>MUA (Mail User Agent) 客户端，显示邮件内容，处理用户操作</p><p>MTA (Mail Transfer Agent) 报文传输代理，MTA客户机与MTA服务器间建立 SMTP 协议</p><p>MDA (Mail Deliver Agent) 服务器保存接收到的邮件</p><p>MRA (Mail Receive Agent) 为客户端从服务器拉取邮件，有POP3 IMAP4等协议</p><h2><span id="er-ge-shi">二、格式</span><a href="#er-ge-shi" class="header-anchor">.</a></h2><p>电子邮件分信封和报文两部分，信封包含发信人的地址与收信人的地址。</p><p>报文有头部和主题，头部包括发件人，收件人，主题，其他信息（如编码），标识与内容以:分隔，例如：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">From: Behrouz Forouzan</span><br><span class="line">To: Sophia Fegan</span><br><span class="line">Date: 1/5/05</span><br><span class="line">Subject: Network</span><br></pre></td></tr></table></figure><p>正文部分以 . 结束</p><h3><span id="mime">MIME</span><a href="#mime" class="header-anchor">.</a></h3><p>电子邮件原本只支持 NVT 7位 ASCII 格式的报文，多用途因特网邮件扩充协议（MIME）允许发送方将非 ASCII 数据转化为 NVT ASCII 数据发送，并在接收方解码为原来的数据。</p><h2><span id="san-smtp">三、SMTP</span><a href="#san-smtp" class="header-anchor">.</a></h2><p>每次投递，SMTP在发送方与邮件服务器间使用一次，在邮件服务器间使用一次。它使用命令与响应在MTA客户与MTA服务器之间传输报文。每一条命令与响应都以 <strong>回车和换行</strong> \<crlf>（\r\n）结束。</crlf></p><p>SMTP的地址（以126邮箱为例） smtp.126.com.</p><p>端口号：25</p><h3><span id="ming-ling">命令</span><a href="#ming-ling" class="header-anchor">.</a></h3><p>客户发给服务器，包含关键词及变量，用冒号分隔，变量视情况可以是任意数量的。</p><table><thead><tr><th>关键词</th><th>作用</th></tr></thead><tbody><tr><td>HELO</td><td>+发送方主机名（域名），使用标准的SMTP</td></tr><tr><td>EHLO</td><td>扩展的HELO，支持用户认证，参见 <a href="http://www.ietf.org/rfc/rfc2821.txt" target="_blank" rel="noopener">RFC 2821</a></td></tr><tr><td>MAIL FROM</td><td>+发件人地址，标明发件人</td></tr><tr><td>RCPT TO</td><td>+收件人地址，标明收件人，可以有多个</td></tr><tr><td>DATA</td><td>+邮件内容，以\<crlf>.\<crlf>结束</crlf></crlf></td></tr><tr><td>QUIT</td><td>无变量，结束会话</td></tr><tr><td>VRFY</td><td>+地址，验证指定邮箱是否存在；由于安全方面的原因，服务器常禁止此命令</td></tr><tr><td>EXPN</td><td>+地址列表，验证给定的邮箱列表是否存在，扩充邮箱列表，也常被禁用</td></tr><tr><td>HELP</td><td>（+命令），查询服务器支持什么命令</td></tr><tr><td>NOOP</td><td>无变量，服务器响应 250 OK</td></tr><tr><td>RSET</td><td>无变量，重置会话，当前传输被取消，服务器响应 250 OK</td></tr><tr><td>STARTTLS</td><td>启用TLS</td></tr></tbody></table><h3><span id="zhuang-tai-ma">状态码</span><a href="#zhuang-tai-ma" class="header-anchor">.</a></h3><table><thead><tr><th>状态码</th><th>说明</th><th>状态码</th><th>说明</th></tr></thead><tbody><tr><td>211</td><td>系统状态或帮助回答</td><td>500</td><td>语法错误，命令无法识别</td></tr><tr><td>214</td><td>帮助信息</td><td>501</td><td>语法错误，参数或变量出错</td></tr><tr><td>220</td><td>服务就绪</td><td>502</td><td>命令未执行</td></tr><tr><td>221</td><td>服务关闭</td><td>503</td><td>命令序列不正确</td></tr><tr><td>250</td><td>操作完成</td><td>504</td><td>命令暂时未执行</td></tr><tr><td>251</td><td>用户非本地，将转发报文</td><td>550</td><td>命令未执行，邮箱不可用</td></tr><tr><td>354</td><td>开始邮件内容输入</td><td>551</td><td>用户非本地</td></tr><tr><td>421</td><td>服务不可用</td><td>552</td><td>异常终止，超出存储位置</td></tr><tr><td>450</td><td>邮箱不可用</td><td>553</td><td>请求未发生，邮箱名不可用</td></tr><tr><td>451</td><td>命令异常终止，本地错误</td><td>554</td><td>操作失败</td></tr><tr><td>452</td><td>命令异常终止，存储空间不足</td><td></td></tr></tbody></table><h3><span id="shi-li">示例</span><a href="#shi-li" class="header-anchor">.</a></h3><p>以126邮箱为例，首先进入邮箱打开SMTP服务，获得授权码。找到base64加密网站，将登录邮箱地址和授权码分别加密。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">telnet smtp.126.com 25 //smtp端口为25</span><br><span class="line">Trying 220.181.15.113...</span><br><span class="line">Connected to smtp.126.com.</span><br><span class="line">Escape character is &apos;^]&apos;.</span><br><span class="line">220 126.com Anti-spam GT for Coremail System (126com[20140526])</span><br><span class="line">EHLO HI //需要用户验证，使用EHLO</span><br><span class="line">250-mail</span><br><span class="line">250-PIPELINING</span><br><span class="line">250-AUTH LOGIN PLAIN </span><br><span class="line">250-AUTH=LOGIN PLAIN</span><br><span class="line">250-coremail 1Uxr2xKj7kG0xkI17xGrU7I0s8FY2U3Uj8Cz28x1UUUUU7Ic2I0Y2UFvkzJ5UCa0xDrUUUUj</span><br><span class="line">250-STARTTLS</span><br><span class="line">250 8BITMIME</span><br><span class="line">auth login //认证登录</span><br><span class="line">334 dXNlcm5hbWU6 //base64的Username:</span><br><span class="line">**** //登录邮箱地址转化为base64，输入</span><br><span class="line">334 UGFzc3dvcmQ6 //base64的Password:</span><br><span class="line">**** //邮箱给你的授权码转化为base64，输入</span><br><span class="line">235 Authentication successful</span><br><span class="line">MAIL FROM: &lt;leoxyw@126.com&gt; //发件人地址</span><br><span class="line">250 Mail OK</span><br><span class="line">RCPT TO: &lt;leoxyw@126.com&gt; //收件人地址            </span><br><span class="line">250 Mail OK</span><br><span class="line">DATA //邮件主体</span><br><span class="line">354 End data with &lt;CR&gt;&lt;LF&gt;.&lt;CR&gt;&lt;LF&gt;</span><br><span class="line">//邮件头字段，这里输入不规范会被当做垃圾邮件退回。</span><br><span class="line">From:  &lt;leoxyw@126.com&gt; </span><br><span class="line">To:  &lt;leoxyw@126.com&gt;</span><br><span class="line">Subject: IDNETworking</span><br><span class="line">Date: Wed, 9 Sep 2020 16:48:31 +0800       </span><br><span class="line">//正文       </span><br><span class="line">This is my message try smtp plz</span><br><span class="line">let it go</span><br><span class="line">plz</span><br><span class="line">. //回车换行.回车换行 结束输入</span><br><span class="line">250 Mail OK queued as smtp3,DcmowACHUwClklhfTW4eJg--.47203S5 1599641324</span><br><span class="line">QUIT</span><br></pre></td></tr></table></figure><p>进入邮箱，可以看到刚刚收到的邮件。</p><p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/smtptest.png" alt=""></p><p>更多-&gt;查看邮件头</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Received: from HI (unknown [113.140.11.120])</span><br><span class="line">by smtp3 (Coremail) with SMTP id DcmowACHUwClklhfTW4eJg--.47203S5;</span><br><span class="line">Wed, 09 Sep 2020 16:38:40 +0800 (CST)</span><br><span class="line">From:  &lt;leoxyw@126.com&gt;</span><br><span class="line">To:  &lt;leoxyw@126.com&gt;</span><br><span class="line">Subject: IDNETworking</span><br><span class="line">Date: Wed, 9 Sep 2020 16:48:31 +0800</span><br><span class="line">X-CM-TRANSID:DcmowACHUwClklhfTW4eJg--.47203S5</span><br><span class="line">Message-Id:&lt;5F5896EC.1825CC.07706@m15113.mail.126.com&gt;</span><br><span class="line">X-Coremail-Antispam: 1Uf129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73</span><br><span class="line">VFW2AGmfu7bjvjm3AaLaJ3UbIYCTnIWIevJa73UjIFyTuYvjxUbfO7UUUUU</span><br><span class="line">X-Originating-IP: [113.140.11.120]</span><br><span class="line">X-CM-SenderInfo: xohr55bz6rjloofrz/1tbiKQyaXlpEBL8pHgAAsz</span><br><span class="line"></span><br><span class="line">This is my message try smtp plz</span><br><span class="line">let it go</span><br><span class="line">plz</span><br></pre></td></tr></table></figure><p> 有关SMTP的进一步信息可以参阅 <a href="http://www.ietf.org/rfc/rfc821.txt" target="_blank" rel="noopener">RFC 821</a> 和 <a href="http://www.ietf.org/rfc/rfc2821.txt" target="_blank" rel="noopener">RFC 2821</a> </p><h2><span id="si-pop3">四、POP3</span><a href="#si-pop3" class="header-anchor">.</a></h2><p>地址（以126邮箱为例）：pop.126.com</p><p>端口号：110</p><table><thead><tr><th>命令</th><th>参数</th><th>状态</th><th>描述</th></tr></thead><tbody><tr><td>USER</td><td>username</td><td>AUTHORIZATION</td><td>输入邮箱地址</td></tr><tr><td>PASS</td><td>password</td><td>AUTHORIZATION</td><td></td></tr><tr><td>APOP</td><td>Name Digest</td><td>AUTHORIZATION</td><td>Digest是MD5消息摘要</td></tr><tr><td>STAT</td><td>None</td><td>TRANSACTION</td><td>请求服务器发回关于邮箱的统计资料，如邮件总数和总字节数</td></tr><tr><td>UIDL</td><td>[Msg#]</td><td>TRANSACTION</td><td>返回邮件的唯一标识符，POP3会话的每个标识符都将是唯一的</td></tr><tr><td>LIST</td><td>[Msg#]</td><td>TRANSACTION</td><td>返回邮件数量和每个邮件的大小</td></tr><tr><td>RETR</td><td>[Msg#]</td><td>TRANSACTION</td><td>返回由参数标识的邮件的全部文本</td></tr><tr><td>DELE</td><td>[Msg#]</td><td>TRANSACTION</td><td>服务器将由参数标识的邮件标记为删除，由quit命令执行</td></tr><tr><td>RSET</td><td>None</td><td>TRANSACTION</td><td>服务器将重置所有标记为删除的邮件，用于撤消DELE命令</td></tr><tr><td>TOP</td><td>msg n</td><td>TRANSACTION</td><td>服务器将返回由参数标识的邮件前n行内容，n必须是正整数</td></tr><tr><td>NOOP</td><td>None</td><td>TRANSACTION</td><td>服务器返回一个肯定的响应</td></tr><tr><td>QUIT</td><td>None</td><td>UPDATE</td></tr></tbody></table><h2><span id="wu-shi-yan-jie-guo-yu-dai-ma">五、实验结果与代码　　</span><a href="#wu-shi-yan-jie-guo-yu-dai-ma" class="header-anchor">.</a></h2><p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/email1.png" alt="email1"></p><p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/email2.png" alt="email2">　               </p><p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/email3.png" alt="email3"></p><p>赶工完成，有些简陋，而且被吐槽 “你这个东西有什么难度？” TAT<br>好像的确没什么难度。</p><p>Emailclient.java</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> email;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.Base64;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Scanner;</span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.net.Socket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Emailclient</span> </span>&#123;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> String POP3Server = <span class="string">"pop.126.com"</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> String SMTPServer = <span class="string">"smtp.126.com"</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">recvmailbox</span><span class="params">(BufferedReader sockin,PrintWriter sockout)</span> </span>&#123;</span><br><span class="line">sockout.println(<span class="string">"stat"</span>);</span><br><span class="line">String temp[];</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">temp = sockin.readLine().split(<span class="string">" "</span>);</span><br><span class="line"><span class="keyword">int</span> count = Integer.parseInt(temp[<span class="number">1</span>]);<span class="comment">//得到信箱中共有多少封邮件</span></span><br><span class="line">Maillist maillist = <span class="keyword">new</span> Maillist();</span><br><span class="line"></span><br><span class="line">System.out.println(<span class="string">"信箱共有"</span> + count + <span class="string">"封邮件"</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; count + <span class="number">1</span>; i++) &#123;<span class="comment">//依次将邮件添加至 maillist</span></span><br><span class="line">sockout.println(<span class="string">"retr "</span> + i);</span><br><span class="line">Mailinfo mailinfo = <span class="keyword">new</span> Mailinfo();</span><br><span class="line"><span class="keyword">int</span> fromindex = <span class="string">"from:"</span>.length();</span><br><span class="line"><span class="keyword">int</span> subjectindex = <span class="string">"subject:"</span>.length();</span><br><span class="line"><span class="keyword">int</span> flag = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (flag==<span class="number">1</span>) &#123;</span><br><span class="line">String reply = sockin.readLine();</span><br><span class="line"><span class="comment">//System.out.println(reply);</span></span><br><span class="line"><span class="keyword">if</span>(reply.startsWith(<span class="string">"from:"</span>)||reply.startsWith(<span class="string">"From:"</span>))</span><br><span class="line">mailinfo.received_from = reply.substring(fromindex);</span><br><span class="line"><span class="keyword">if</span>(reply.startsWith(<span class="string">"subject:"</span>)||reply.startsWith(<span class="string">"Subject:"</span>))</span><br><span class="line">mailinfo.subject = reply.substring(subjectindex);</span><br><span class="line"><span class="keyword">if</span>(reply.equals(<span class="string">""</span>)) &#123;</span><br><span class="line"><span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">reply = sockin.readLine();</span><br><span class="line">mailinfo.content = mailinfo.content+reply+<span class="string">"\r\n"</span> ;</span><br><span class="line"><span class="keyword">if</span> (reply.toLowerCase().equals(<span class="string">"."</span>)) &#123;</span><br><span class="line">flag = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">maillist.putMail(mailinfo);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">int</span> flag=<span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span>(flag==<span class="number">1</span>) &#123;</span><br><span class="line">System.out.println(<span class="string">"输入0查看邮件列表，输入数字查看该序号邮件，输入-1返回主菜单"</span>);</span><br><span class="line"><span class="keyword">int</span> command;</span><br><span class="line">Scanner scanner3 = <span class="keyword">new</span> Scanner(System.in);</span><br><span class="line">command = scanner3.nextInt();</span><br><span class="line"><span class="keyword">switch</span> (command) &#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">System.out.println(<span class="string">"序号 发件人主题"</span>);</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;count;i++) &#123;</span><br><span class="line">Mailinfo info = <span class="keyword">new</span> Mailinfo();</span><br><span class="line">info = maillist.getMail(i+<span class="number">1</span>);</span><br><span class="line">System.out.println((i+<span class="number">1</span>)+<span class="string">" "</span>+info.received_from+<span class="string">" "</span>+info.subject);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> -<span class="number">1</span>:</span><br><span class="line">flag = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">break</span>;    </span><br><span class="line"><span class="keyword">default</span> :</span><br><span class="line">Mailinfo info = <span class="keyword">new</span> Mailinfo();</span><br><span class="line">info = maillist.getMail(command);</span><br><span class="line">System.out.println(<span class="string">"主题："</span>+info.subject);</span><br><span class="line">System.out.println(<span class="string">"发件人："</span>+info.received_from);</span><br><span class="line">System.out.println(<span class="string">"正文："</span>+info.content);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line"><span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">writeemail</span><span class="params">(BufferedReader sockin,PrintWriter sockout,String username,String password)</span> </span>&#123;</span><br><span class="line">Socket smptsocket = <span class="keyword">null</span>;</span><br><span class="line">sockout.println(<span class="string">"NOOP"</span>);</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line"><span class="comment">//建立SMTP连接</span></span><br><span class="line">System.out.println(<span class="string">"S:"</span> + sockin.readLine());</span><br><span class="line">String recvadd = <span class="string">""</span>;</span><br><span class="line">String fromadd = username;</span><br><span class="line">smptsocket = <span class="keyword">new</span> Socket(Emailclient.SMTPServer,<span class="number">25</span>);</span><br><span class="line">InputStream sis = smptsocket.getInputStream();</span><br><span class="line">            BufferedReader br = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(sis));</span><br><span class="line">            OutputStream sos = smptsocket.getOutputStream();</span><br><span class="line">            PrintWriter pw = <span class="keyword">new</span> PrintWriter(sos, <span class="keyword">true</span>);</span><br><span class="line">            System.out.println(<span class="string">"SMPT:"</span> + br.readLine());</span><br><span class="line">            <span class="keyword">int</span> recvcount = <span class="number">1</span>;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">//登录与验证</span></span><br><span class="line">            pw.println(<span class="string">"EHLO Alice"</span>);</span><br><span class="line">            String str = <span class="keyword">null</span>;</span><br><span class="line">            </span><br><span class="line">            </span><br><span class="line">            <span class="keyword">char</span>[] data = <span class="keyword">new</span> <span class="keyword">char</span>[<span class="number">1024</span>];</span><br><span class="line">            br.read(data,<span class="number">0</span>,<span class="number">1024</span>);</span><br><span class="line">            System.out.println(<span class="string">"SMPT:"</span> + data);</span><br><span class="line">            pw.println(<span class="string">"auth login"</span>);</span><br><span class="line">            System.out.println(<span class="string">"SMPT:"</span> + br.readLine());</span><br><span class="line">            String base64useranme = Base64.getEncoder().encodeToString(username.getBytes(<span class="string">"utf-8"</span>));</span><br><span class="line">            pw.println(base64useranme);</span><br><span class="line">            System.out.println(<span class="string">"SMPT:"</span> + br.readLine());</span><br><span class="line">            Scanner scanner2 = <span class="keyword">new</span> Scanner(System.in);</span><br><span class="line">            System.out.print(<span class="string">"请输入写邮件授权码\n"</span>); </span><br><span class="line">            String passwordsmtp = scanner2.next();</span><br><span class="line">            String base64password = Base64.getEncoder().encodeToString(passwordsmtp.getBytes(<span class="string">"utf-8"</span>));</span><br><span class="line">            pw.println(base64password);</span><br><span class="line">            System.out.println(<span class="string">"SMPT:"</span> + br.readLine());</span><br><span class="line">            </span><br><span class="line">            <span class="comment">//发件人与收件人</span></span><br><span class="line">            pw.println(<span class="string">"MAIL FROM: &lt;"</span>+fromadd+<span class="string">"&gt;"</span>);</span><br><span class="line">            System.out.println(<span class="string">"SMPT:"</span> + br.readLine());</span><br><span class="line">            </span><br><span class="line">    System.out.print(<span class="string">"请输入收件人个数\n"</span>);   </span><br><span class="line">    recvcount = scanner2.nextInt();</span><br><span class="line">    List&lt;String&gt; names=<span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;recvcount;i++) &#123;</span><br><span class="line">    System.out.print(<span class="string">"请输入收件人 "</span>+(i+<span class="number">1</span>)+<span class="string">" 地址\n"</span>); </span><br><span class="line">    recvadd = scanner2.next();</span><br><span class="line">    names.add(recvadd);</span><br><span class="line">    pw.println(<span class="string">"RCPT TO: &lt;"</span>+recvadd+<span class="string">"&gt;"</span>);</span><br><span class="line">    System.out.println(<span class="string">"SMPT:"</span> + br.readLine());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//邮件内容</span></span><br><span class="line">    pw.println(<span class="string">"Data"</span>);</span><br><span class="line">    System.out.println(<span class="string">"SMPT:"</span> + br.readLine());</span><br><span class="line">    Scanner scanner3 = <span class="keyword">new</span> Scanner(System.in);</span><br><span class="line">    System.out.print(<span class="string">"请输入邮件主题\n"</span>); </span><br><span class="line">    </span><br><span class="line">String subject = scanner3.nextLine();</span><br><span class="line">    pw.println(<span class="string">"From: "</span>+fromadd);</span><br><span class="line">    pw.println(<span class="string">"To: "</span>+String.join(<span class="string">","</span>,names));</span><br><span class="line">    pw.println(<span class="string">"Subject: "</span>+subject);</span><br><span class="line">    System.out.print(<span class="string">"输入正文，以新一行的“.”结束\n"</span>); </span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">    String msg = scanner2.nextLine();</span><br><span class="line">    pw.println(msg);</span><br><span class="line">    <span class="keyword">if</span>(msg.equals(<span class="string">"."</span>))<span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println(<span class="string">"SMPT:"</span> + br.readLine());</span><br><span class="line">    System.out.println(<span class="string">"邮件发送完成，写邮件通道关闭"</span>);</span><br><span class="line">    pw.println(<span class="string">"quit"</span>);</span><br><span class="line">    System.out.println(<span class="string">"SMPT:"</span> + br.readLine());</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line"><span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">e.printStackTrace();</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (smptsocket != <span class="keyword">null</span>) &#123;</span><br><span class="line">                smptsocket.close();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;&#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">quit</span><span class="params">(BufferedReader sockin,PrintWriter sockout)</span> </span>&#123;</span><br><span class="line">sockout.println(<span class="string">"quit"</span>);</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">System.out.println(<span class="string">"S:"</span> + sockin.readLine());</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line"><span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">AUTHORIZATION</span><span class="params">(BufferedReader sockin,PrintWriter sockout,String USERNAME,String PASSWORD)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">System.out.println(<span class="string">"S:"</span> + sockin.readLine());</span><br><span class="line">        sockout.println(<span class="string">"user "</span> + USERNAME);</span><br><span class="line">        System.out.println(<span class="string">"S:"</span> + sockin.readLine());</span><br><span class="line">        sockout.println(<span class="string">"pass "</span> + PASSWORD);</span><br><span class="line">        System.out.println(<span class="string">"S:"</span> + sockin.readLine());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line"><span class="keyword">int</span> POP3Port = <span class="number">110</span>;</span><br><span class="line">String USERNAME = <span class="string">""</span>;</span><br><span class="line">String PASSWORD = <span class="string">""</span>;</span><br><span class="line">        Socket client = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">        Scanner scanner = <span class="keyword">new</span> Scanner(System.in);</span><br><span class="line">    System.out.print(<span class="string">"请输入邮箱地址\n"</span>);</span><br><span class="line">    USERNAME = scanner.next();</span><br><span class="line">    System.out.print(<span class="string">"请输入授权码\n"</span>);</span><br><span class="line">    PASSWORD = scanner.next();</span><br><span class="line">    <span class="comment">//创建socket</span></span><br><span class="line">            client = <span class="keyword">new</span> Socket(Emailclient.POP3Server, POP3Port);</span><br><span class="line">            InputStream is = client.getInputStream();</span><br><span class="line">            BufferedReader sockin = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(is));</span><br><span class="line">            OutputStream os = client.getOutputStream();</span><br><span class="line">            PrintWriter sockout = <span class="keyword">new</span> PrintWriter(os, <span class="keyword">true</span>);</span><br><span class="line">            </span><br><span class="line">            AUTHORIZATION(sockin,sockout,USERNAME,PASSWORD);           </span><br><span class="line">            </span><br><span class="line">            <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">            System.out.print(<span class="string">"请输入命令 1.查看收件箱 2.写信  3.刷新 0.退出\n"</span>);</span><br><span class="line">            <span class="keyword">int</span> command;</span><br><span class="line">        command = scanner.nextInt();</span><br><span class="line">            <span class="keyword">switch</span> (command) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            recvmailbox(sockin,sockout);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">            writeemail(sockin,sockout,USERNAME,PASSWORD);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">            quit(sockin,sockout);</span><br><span class="line">            client = <span class="keyword">new</span> Socket(Emailclient.POP3Server, POP3Port);</span><br><span class="line">                        is = client.getInputStream();</span><br><span class="line">                        sockin = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(is));</span><br><span class="line">                        os = client.getOutputStream();</span><br><span class="line">                        sockout = <span class="keyword">new</span> PrintWriter(os, <span class="keyword">true</span>);</span><br><span class="line">                        AUTHORIZATION(sockin,sockout,USERNAME,PASSWORD); </span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">            quit(sockin,sockout);</span><br><span class="line">            sockout.println(<span class="string">"quit"</span>);</span><br><span class="line">            System.out.println(<span class="string">"S:"</span> + sockin.readLine());   </span><br><span class="line">            <span class="keyword">if</span>(sockout!=<span class="keyword">null</span>)</span><br><span class="line">            sockout.close();</span><br><span class="line">            <span class="keyword">if</span>(os!=<span class="keyword">null</span>)</span><br><span class="line">            os.close();</span><br><span class="line">            <span class="keyword">if</span>(sockin!=<span class="keyword">null</span>)</span><br><span class="line">            sockin.close();</span><br><span class="line">            <span class="keyword">if</span>(is!=<span class="keyword">null</span>)</span><br><span class="line">            is.close();</span><br><span class="line">            <span class="keyword">if</span> (client != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            client.close();</span><br><span class="line">                        &#125;</span><br><span class="line">            System.exit(<span class="number">0</span>);</span><br><span class="line">            &#125;         </span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            System.out.println(e.toString());</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (client != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    client.close();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;&#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>Maillist.java</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> email;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Maillist</span> </span>&#123;</span><br><span class="line">    ArrayList&lt;Mailinfo&gt; mails;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Maillist</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        mails=<span class="keyword">new</span> ArrayList&lt;Mailinfo&gt;();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">putMail</span><span class="params">(Mailinfo mail)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        mails.add(mail);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Mailinfo <span class="title">getMail</span><span class="params">(<span class="keyword">int</span> num)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mails.get(num-<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">mailCount</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mails.size();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>Mailinfo.java</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> email;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Mailinfo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> String received_from=<span class="string">""</span>;</span><br><span class="line">    <span class="keyword">public</span> String subject=<span class="string">""</span>;</span><br><span class="line">    <span class="keyword">public</span> String content=<span class="string">""</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;toc&quot;&gt;
+
+&lt;!-- toc --&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#yi-dian-zi-you-jian-xi-tong-jia-gou&quot;&gt;一、电子邮件系统架构&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#er-ge-shi&quot;&gt;二、格式&lt;/a
+      
+    
+    </summary>
+    
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+    
+    
+      <category term="网络" scheme="http://www.eteluna.top/tags/%E7%BD%91%E7%BB%9C/"/>
+    
+      <category term="java" scheme="http://www.eteluna.top/tags/java/"/>
     
   </entry>
   
   <entry>
     <title>BlogUPUP 折腾记录</title>
-    <link href="http://yoursite.com/2020/07/10/Blogupup/"/>
-    <id>http://yoursite.com/2020/07/10/Blogupup/</id>
+    <link href="http://www.eteluna.top/2020/07/10/Blogupup/"/>
+    <id>http://www.eteluna.top/2020/07/10/Blogupup/</id>
     <published>2020-07-10T15:23:00.000Z</published>
     <updated>2020-07-11T09:49:05.023Z</updated>
     
@@ -73,19 +105,19 @@
     
     </summary>
     
-      <category term="折腾搞事" scheme="http://yoursite.com/categories/%E6%8A%98%E8%85%BE%E6%90%9E%E4%BA%8B/"/>
+      <category term="折腾搞事" scheme="http://www.eteluna.top/categories/%E6%8A%98%E8%85%BE%E6%90%9E%E4%BA%8B/"/>
     
     
-      <category term="blog" scheme="http://yoursite.com/tags/blog/"/>
+      <category term="blog" scheme="http://www.eteluna.top/tags/blog/"/>
     
-      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
+      <category term="笔记" scheme="http://www.eteluna.top/tags/%E7%AC%94%E8%AE%B0/"/>
     
   </entry>
   
   <entry>
     <title>媒体数据管理上机实验</title>
-    <link href="http://yoursite.com/2020/07/07/Mediadataexp/"/>
-    <id>http://yoursite.com/2020/07/07/Mediadataexp/</id>
+    <link href="http://www.eteluna.top/2020/07/07/Mediadataexp/"/>
+    <id>http://www.eteluna.top/2020/07/07/Mediadataexp/</id>
     <published>2020-07-07T06:23:00.000Z</published>
     <updated>2020-07-07T08:11:16.462Z</updated>
     
@@ -106,19 +138,19 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
+      <category term="笔记" scheme="http://www.eteluna.top/tags/%E7%AC%94%E8%AE%B0/"/>
     
-      <category term="python" scheme="http://yoursite.com/tags/python/"/>
+      <category term="python" scheme="http://www.eteluna.top/tags/python/"/>
     
   </entry>
   
   <entry>
     <title>What happens when （二）TCP</title>
-    <link href="http://yoursite.com/2020/05/04/Whathappenwhen2/"/>
-    <id>http://yoursite.com/2020/05/04/Whathappenwhen2/</id>
+    <link href="http://www.eteluna.top/2020/05/04/Whathappenwhen2/"/>
+    <id>http://www.eteluna.top/2020/05/04/Whathappenwhen2/</id>
     <published>2020-05-04T08:00:00.000Z</published>
     <updated>2020-05-07T06:17:32.479Z</updated>
     
@@ -138,19 +170,19 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="web" scheme="http://yoursite.com/tags/web/"/>
+      <category term="web" scheme="http://www.eteluna.top/tags/web/"/>
     
-      <category term="网络" scheme="http://yoursite.com/tags/%E7%BD%91%E7%BB%9C/"/>
+      <category term="网络" scheme="http://www.eteluna.top/tags/%E7%BD%91%E7%BB%9C/"/>
     
   </entry>
   
   <entry>
     <title>What happen when （一）DNS</title>
-    <link href="http://yoursite.com/2020/04/09/Whathappenedthen1/"/>
-    <id>http://yoursite.com/2020/04/09/Whathappenedthen1/</id>
+    <link href="http://www.eteluna.top/2020/04/09/Whathappenedthen1/"/>
+    <id>http://www.eteluna.top/2020/04/09/Whathappenedthen1/</id>
     <published>2020-04-09T08:21:00.000Z</published>
     <updated>2020-08-26T05:37:45.000Z</updated>
     
@@ -171,19 +203,19 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="web" scheme="http://yoursite.com/tags/web/"/>
+      <category term="web" scheme="http://www.eteluna.top/tags/web/"/>
     
-      <category term="网络" scheme="http://yoursite.com/tags/%E7%BD%91%E7%BB%9C/"/>
+      <category term="网络" scheme="http://www.eteluna.top/tags/%E7%BD%91%E7%BB%9C/"/>
     
   </entry>
   
   <entry>
     <title>Java并发(1)线程基础</title>
-    <link href="http://yoursite.com/2020/03/16/java1/"/>
-    <id>http://yoursite.com/2020/03/16/java1/</id>
+    <link href="http://www.eteluna.top/2020/03/16/java1/"/>
+    <id>http://www.eteluna.top/2020/03/16/java1/</id>
     <published>2020-03-16T11:50:23.000Z</published>
     <updated>2020-07-11T08:25:17.281Z</updated>
     
@@ -199,19 +231,19 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
+      <category term="笔记" scheme="http://www.eteluna.top/tags/%E7%AC%94%E8%AE%B0/"/>
     
-      <category term="java" scheme="http://yoursite.com/tags/java/"/>
+      <category term="java" scheme="http://www.eteluna.top/tags/java/"/>
     
   </entry>
   
   <entry>
     <title>SpringMVC初探</title>
-    <link href="http://yoursite.com/2020/01/15/springmvc/"/>
-    <id>http://yoursite.com/2020/01/15/springmvc/</id>
+    <link href="http://www.eteluna.top/2020/01/15/springmvc/"/>
+    <id>http://www.eteluna.top/2020/01/15/springmvc/</id>
     <published>2020-01-15T07:42:00.000Z</published>
     <updated>2020-07-11T08:27:37.844Z</updated>
     
@@ -227,17 +259,17 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="spring" scheme="http://yoursite.com/tags/spring/"/>
+      <category term="spring" scheme="http://www.eteluna.top/tags/spring/"/>
     
   </entry>
   
   <entry>
     <title>视觉实验三 全景图</title>
-    <link href="http://yoursite.com/2020/01/10/BlogVE3/"/>
-    <id>http://yoursite.com/2020/01/10/BlogVE3/</id>
+    <link href="http://www.eteluna.top/2020/01/10/BlogVE3/"/>
+    <id>http://www.eteluna.top/2020/01/10/BlogVE3/</id>
     <published>2020-01-10T14:10:00.000Z</published>
     <updated>2020-07-11T08:23:34.256Z</updated>
     
@@ -253,17 +285,17 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="视觉" scheme="http://yoursite.com/tags/%E8%A7%86%E8%A7%89/"/>
+      <category term="视觉" scheme="http://www.eteluna.top/tags/%E8%A7%86%E8%A7%89/"/>
     
   </entry>
   
   <entry>
     <title>资治通鉴笔记（汉高后-武帝）</title>
-    <link href="http://yoursite.com/2019/12/29/tongjian/"/>
-    <id>http://yoursite.com/2019/12/29/tongjian/</id>
+    <link href="http://www.eteluna.top/2019/12/29/tongjian/"/>
+    <id>http://www.eteluna.top/2019/12/29/tongjian/</id>
     <published>2019-12-29T14:14:00.000Z</published>
     <updated>2020-07-11T08:28:42.552Z</updated>
     
@@ -279,19 +311,19 @@
     
     </summary>
     
-      <category term="人文社科" scheme="http://yoursite.com/categories/%E4%BA%BA%E6%96%87%E7%A4%BE%E7%A7%91/"/>
+      <category term="人文社科" scheme="http://www.eteluna.top/categories/%E4%BA%BA%E6%96%87%E7%A4%BE%E7%A7%91/"/>
     
     
-      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
+      <category term="笔记" scheme="http://www.eteluna.top/tags/%E7%AC%94%E8%AE%B0/"/>
     
-      <category term="史部" scheme="http://yoursite.com/tags/%E5%8F%B2%E9%83%A8/"/>
+      <category term="史部" scheme="http://www.eteluna.top/tags/%E5%8F%B2%E9%83%A8/"/>
     
   </entry>
   
   <entry>
     <title>视觉实验二 特征检测与匹配</title>
-    <link href="http://yoursite.com/2019/11/19/BlogVE2/"/>
-    <id>http://yoursite.com/2019/11/19/BlogVE2/</id>
+    <link href="http://www.eteluna.top/2019/11/19/BlogVE2/"/>
+    <id>http://www.eteluna.top/2019/11/19/BlogVE2/</id>
     <published>2019-11-19T09:20:00.000Z</published>
     <updated>2020-07-11T08:23:01.645Z</updated>
     
@@ -307,17 +339,17 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="视觉" scheme="http://yoursite.com/tags/%E8%A7%86%E8%A7%89/"/>
+      <category term="视觉" scheme="http://www.eteluna.top/tags/%E8%A7%86%E8%A7%89/"/>
     
   </entry>
   
   <entry>
     <title>笔记-儒家思想中的政教关系</title>
-    <link href="http://yoursite.com/2019/11/01/rujia/"/>
-    <id>http://yoursite.com/2019/11/01/rujia/</id>
+    <link href="http://www.eteluna.top/2019/11/01/rujia/"/>
+    <id>http://www.eteluna.top/2019/11/01/rujia/</id>
     <published>2019-11-01T03:56:00.000Z</published>
     <updated>2020-07-11T08:26:45.504Z</updated>
     
@@ -333,19 +365,19 @@
     
     </summary>
     
-      <category term="人文社科" scheme="http://yoursite.com/categories/%E4%BA%BA%E6%96%87%E7%A4%BE%E7%A7%91/"/>
+      <category term="人文社科" scheme="http://www.eteluna.top/categories/%E4%BA%BA%E6%96%87%E7%A4%BE%E7%A7%91/"/>
     
     
-      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
+      <category term="笔记" scheme="http://www.eteluna.top/tags/%E7%AC%94%E8%AE%B0/"/>
     
-      <category term="史部" scheme="http://yoursite.com/tags/%E5%8F%B2%E9%83%A8/"/>
+      <category term="史部" scheme="http://www.eteluna.top/tags/%E5%8F%B2%E9%83%A8/"/>
     
   </entry>
   
   <entry>
     <title>视觉实验一 混合图像</title>
-    <link href="http://yoursite.com/2019/10/06/BlogVE1/"/>
-    <id>http://yoursite.com/2019/10/06/BlogVE1/</id>
+    <link href="http://www.eteluna.top/2019/10/06/BlogVE1/"/>
+    <id>http://www.eteluna.top/2019/10/06/BlogVE1/</id>
     <published>2019-10-06T06:44:00.000Z</published>
     <updated>2020-07-11T08:22:00.253Z</updated>
     
@@ -360,17 +392,17 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="视觉" scheme="http://yoursite.com/tags/%E8%A7%86%E8%A7%89/"/>
+      <category term="视觉" scheme="http://www.eteluna.top/tags/%E8%A7%86%E8%A7%89/"/>
     
   </entry>
   
   <entry>
     <title>Spring初探-核心特性与解耦</title>
-    <link href="http://yoursite.com/2019/08/31/Springchutan/"/>
-    <id>http://yoursite.com/2019/08/31/Springchutan/</id>
+    <link href="http://www.eteluna.top/2019/08/31/Springchutan/"/>
+    <id>http://www.eteluna.top/2019/08/31/Springchutan/</id>
     <published>2019-08-31T09:06:21.000Z</published>
     <updated>2020-07-11T08:27:02.300Z</updated>
     
@@ -388,17 +420,17 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="spring" scheme="http://yoursite.com/tags/spring/"/>
+      <category term="spring" scheme="http://www.eteluna.top/tags/spring/"/>
     
   </entry>
   
   <entry>
     <title>MySQL安装排错</title>
-    <link href="http://yoursite.com/2019/05/12/MySQL/"/>
-    <id>http://yoursite.com/2019/05/12/MySQL/</id>
+    <link href="http://www.eteluna.top/2019/05/12/MySQL/"/>
+    <id>http://www.eteluna.top/2019/05/12/MySQL/</id>
     <published>2019-05-12T15:27:00.000Z</published>
     <updated>2020-07-11T08:25:55.557Z</updated>
     
@@ -414,17 +446,17 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="MySQL" scheme="http://yoursite.com/tags/MySQL/"/>
+      <category term="MySQL" scheme="http://www.eteluna.top/tags/MySQL/"/>
     
   </entry>
   
   <entry>
     <title>Git的操作</title>
-    <link href="http://yoursite.com/2018/11/19/Git/"/>
-    <id>http://yoursite.com/2018/11/19/Git/</id>
+    <link href="http://www.eteluna.top/2018/11/19/Git/"/>
+    <id>http://www.eteluna.top/2018/11/19/Git/</id>
     <published>2018-11-19T15:05:00.000Z</published>
     <updated>2020-07-11T08:24:16.543Z</updated>
     
@@ -440,19 +472,19 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="git" scheme="http://yoursite.com/tags/git/"/>
+      <category term="git" scheme="http://www.eteluna.top/tags/git/"/>
     
-      <category term="工具" scheme="http://yoursite.com/tags/%E5%B7%A5%E5%85%B7/"/>
+      <category term="工具" scheme="http://www.eteluna.top/tags/%E5%B7%A5%E5%85%B7/"/>
     
   </entry>
   
   <entry>
     <title>Android/Activity,Intent,Context总结</title>
-    <link href="http://yoursite.com/2018/09/30/Activity/"/>
-    <id>http://yoursite.com/2018/09/30/Activity/</id>
+    <link href="http://www.eteluna.top/2018/09/30/Activity/"/>
+    <id>http://www.eteluna.top/2018/09/30/Activity/</id>
     <published>2018-09-30T14:27:00.000Z</published>
     <updated>2020-07-11T08:20:10.768Z</updated>
     
@@ -468,17 +500,17 @@
     
     </summary>
     
-      <category term="学习相关" scheme="http://yoursite.com/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
+      <category term="学习相关" scheme="http://www.eteluna.top/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/"/>
     
     
-      <category term="Android" scheme="http://yoursite.com/tags/Android/"/>
+      <category term="Android" scheme="http://www.eteluna.top/tags/Android/"/>
     
   </entry>
   
   <entry>
     <title>从神探夏洛克到失落的潼关古城</title>
-    <link href="http://yoursite.com/2018/05/16/tongguan/"/>
-    <id>http://yoursite.com/2018/05/16/tongguan/</id>
+    <link href="http://www.eteluna.top/2018/05/16/tongguan/"/>
+    <id>http://www.eteluna.top/2018/05/16/tongguan/</id>
     <published>2018-05-16T14:25:46.000Z</published>
     <updated>2020-07-11T08:28:30.284Z</updated>
     
@@ -493,19 +525,19 @@
     
     </summary>
     
-      <category term="人文社科" scheme="http://yoursite.com/categories/%E4%BA%BA%E6%96%87%E7%A4%BE%E7%A7%91/"/>
+      <category term="人文社科" scheme="http://www.eteluna.top/categories/%E4%BA%BA%E6%96%87%E7%A4%BE%E7%A7%91/"/>
     
     
-      <category term="随笔" scheme="http://yoursite.com/tags/%E9%9A%8F%E7%AC%94/"/>
+      <category term="随笔" scheme="http://www.eteluna.top/tags/%E9%9A%8F%E7%AC%94/"/>
     
-      <category term="方志" scheme="http://yoursite.com/tags/%E6%96%B9%E5%BF%97/"/>
+      <category term="方志" scheme="http://www.eteluna.top/tags/%E6%96%B9%E5%BF%97/"/>
     
   </entry>
   
   <entry>
     <title>A MAD A DAY（四月下）</title>
-    <link href="http://yoursite.com/2018/05/07/AMADADAY2/"/>
-    <id>http://yoursite.com/2018/05/07/AMADADAY2/</id>
+    <link href="http://www.eteluna.top/2018/05/07/AMADADAY2/"/>
+    <id>http://www.eteluna.top/2018/05/07/AMADADAY2/</id>
     <published>2018-05-07T12:35:14.000Z</published>
     <updated>2020-07-11T08:21:14.067Z</updated>
     
@@ -520,17 +552,17 @@
     
     </summary>
     
-      <category term="折腾搞事" scheme="http://yoursite.com/categories/%E6%8A%98%E8%85%BE%E6%90%9E%E4%BA%8B/"/>
+      <category term="折腾搞事" scheme="http://www.eteluna.top/categories/%E6%8A%98%E8%85%BE%E6%90%9E%E4%BA%8B/"/>
     
     
-      <category term="MAD" scheme="http://yoursite.com/tags/MAD/"/>
+      <category term="MAD" scheme="http://www.eteluna.top/tags/MAD/"/>
     
   </entry>
   
   <entry>
     <title>搭建Digital Ocean服务器遇到的问题</title>
-    <link href="http://yoursite.com/2018/04/18/DigitalOcean/"/>
-    <id>http://yoursite.com/2018/04/18/DigitalOcean/</id>
+    <link href="http://www.eteluna.top/2018/04/18/DigitalOcean/"/>
+    <id>http://www.eteluna.top/2018/04/18/DigitalOcean/</id>
     <published>2018-04-18T12:48:07.000Z</published>
     <updated>2020-07-11T08:24:04.739Z</updated>
     
@@ -546,35 +578,10 @@
     
     </summary>
     
-      <category term="折腾搞事" scheme="http://yoursite.com/categories/%E6%8A%98%E8%85%BE%E6%90%9E%E4%BA%8B/"/>
+      <category term="折腾搞事" scheme="http://www.eteluna.top/categories/%E6%8A%98%E8%85%BE%E6%90%9E%E4%BA%8B/"/>
     
     
-      <category term="web" scheme="http://yoursite.com/tags/web/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>A MAD A DAY（四月上）</title>
-    <link href="http://yoursite.com/2018/04/15/AMADADAY1/"/>
-    <id>http://yoursite.com/2018/04/15/AMADADAY1/</id>
-    <published>2018-04-15T13:26:08.000Z</published>
-    <updated>2020-07-11T08:20:56.578Z</updated>
-    
-    <content type="html"><![CDATA[<h3><span id="4-2-jing-a-ni-amv-don-t-let-me-down">4.2【京阿尼AMV】 Don’t Let Me Down</span><a href="#4-2-jing-a-ni-amv-don-t-let-me-down" class="header-anchor">.</a></h3><hr><p>开始了一天一个MAD的学习计划。为了自己又立下的Flag  不过第一天就发现要想做出个让自己满意的MAD，还是有很长的路要走。</p><p>今日份 永远的我的鸟笼Me 的  【京阿尼AMV】Don’t Let Me Down(<a href="http://www.bilibili.com/video/av12110340" target="_blank" rel="noopener">av12110340</a>)</p><p>一开始就被震撼到:</p><ul><li>调色与暗角非常有感觉</li><li>恰到好处的慢放（每个素材后几乎都有）</li><li>画面中的歌词出现</li><li>最强的是与鼓点搭配的抖动特效</li><li>还有帅气的转场</li></ul><p>具体转场方面：<br>前半部分没有特殊转场，都是间隔差不多直接切，但切之前都会把速度调慢，出现慢放效果。镜头之间都是直接有关联（蒙太奇效果）</p><p>1:24音乐达到高潮前，用快速的切镜头营造氛围，3秒内调整不透明度曝光左右分别放置，高潮部分开始，之后就是他的教程中也提到具体方法的抖动旋转曝光拉镜头二分切，放大缩小镜像拉窗帘。</p><p>之后继续相关联的镜头慢放为主，同样在接近高潮部分时用几组奔跑寻找呐喊的镜头快切来营造氛围。然后是以桥为线索的抖动放大缩小曝光切换。 </p><p>那个黑边也算是个小技巧吧（或许可以用来修整素材）。让观众只看中心。<br>还得好好学Ae啊。。。摄像机旋转，粒子消散什么的。加入了收藏夹。有个疑问就是如果用Ae分着做用pr合起来，怎么让镜头和bgm接的上啊？难道是直接先把音乐分段再去一段一段地制作？以及果然是音乐决定风格啊。</p><h3><span id="4-3-you-zai-feng-he-gu-xiang">4.3 <strong>悠哉·风和·故乡</strong></span><a href="#4-3-you-zai-feng-he-gu-xiang" class="header-anchor">.</a></h3><hr><p>悠哉·风和·故乡 <a href="http://www.bilibili.com/video/av1829711" target="_blank" rel="noopener">av1829711</a> p17<br>日常系的悠哉大王，音乐和画面都很轻缓。故即便时长5分钟也还很好。还是<strong>音乐 镜头 风格</strong> 都是要在一起说的。</p><ul><li>节奏和画面配合，包括字和星星的出现</li><li>画面很明显是在用滤镜蒙版处理。滤镜是在切换的。<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/mb.png" title="[蒙版]"></li><li>过场值得学习，先模糊再消失，或者让后图不动，前边的图片消失掉。<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/natsu.png" title="[矢量小标]"></li><li>还有用Ai搞的小玩意，像上图的字</li><li>最后，有一些漫画组合。感觉留白还是很重要的。 做静止系可以参考。</li></ul><p>整体的确是给人以美的感受。<br>最后的绳吊有些意思，可以练练手，与小图形一起。<br><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/rope.png" title="[绳索]"></p><h3><span id="4-4-lian-zhi-yin-ji">4.4 <strong>恋之印记</strong></span><a href="#4-4-lian-zhi-yin-ji" class="header-anchor">.</a></h3><hr><p>还是上一个视频 <a href="http://www.bilibili.com/video/av1829711" target="_blank" rel="noopener">av1829711</a> 的p15</p><p>静止系，重要的是要在静中体现动，从而配合音乐使得不会那么乏味。从这样一个全屏的静止系可以看出对透明度和放缩的使用的确很好，但是还是觉得静止的话就应该多留白，并用更多特效营造感觉。<br>所以说<br>不是那么好弄的啊！<br>值得学习的地方：</p><ul><li>透明度与放缩</li><li>一开始的樱花是粒子特效么？</li><li>调色。</li></ul><h3><span id="4-9-you-xi-ren-sheng-zero-asmv-wei-wan-jie-de-gu-shi">4.9【游戏人生zero/ASMV】未完结的故事</span><a href="#4-9-you-xi-ren-sheng-zero-asmv-wei-wan-jie-de-gu-shi" class="header-anchor">.</a></h3><hr><p><em>把之前看过的拿出来继续分析。</em><br>未完结的故事 <a href="http://www.bilibili.com/video/av20507292" target="_blank" rel="noopener">av20507292</a><br>这个MAD，主要是要看素材的挑选与恰到好处的文字出现。</p><p>素材方面：</p><ul><li>自然而然地选取 <strong>需要</strong> 的素材，而非什么东西都往上加，</li><li>至于选定了的，素材要相互关联。<br>文字方面：</li><li>文字和主角的声音都是配合的天衣无缝恰到好处。文字的效果也是可以学习的一个方面。</li></ul><h3><span id="4-13-zong-man-nuan-yuan-ni-bei-zhe-shi-jie-wen-rou-yi-dai">4.13【综漫/暖】愿你被这世界温柔以待</span><a href="#4-13-zong-man-nuan-yuan-ni-bei-zhe-shi-jie-wen-rou-yi-dai" class="header-anchor">.</a></h3><hr><p>综漫，愿你被世界温柔以待 <a href="http://www.bilibili.com/video/av11037395" target="_blank" rel="noopener">av11037395</a><br>感想：难道真的是把一堆自带人气的东西聚集在一起就能人气超高？？但还是要就视频本身的优点进行分析：</p><ul><li>镜头，没有用什么特效，但是特别地能体现出蒙太奇的思想。镜头语言很棒！</li><li>配音的插入刚好在仅有伴奏时，值得借鉴。</li></ul>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h3&gt;&lt;span id=&quot;4-2-jing-a-ni-amv-don-t-let-me-down&quot;&gt;4.2【京阿尼AMV】 Don’t Let Me Down&lt;/span&gt;&lt;a href=&quot;#4-2-jing-a-ni-amv-don-t-let-me-down&quot; class=
-      
-    
-    </summary>
-    
-      <category term="折腾搞事" scheme="http://yoursite.com/categories/%E6%8A%98%E8%85%BE%E6%90%9E%E4%BA%8B/"/>
-    
-    
-      <category term="MAD" scheme="http://yoursite.com/tags/MAD/"/>
+      <category term="web" scheme="http://www.eteluna.top/tags/web/"/>
     
   </entry>
   
