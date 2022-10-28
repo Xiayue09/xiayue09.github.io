@@ -1,0 +1,674 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/icon.jpg">
+  <link rel="icon" href="/img/icon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#29d">
+  <meta name="author" content="夏月">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="访问网站时，从输入 URL 到显示页面间发生了什么？ 这是个老生常谈的话题。大一时在科创社有次分享就是围绕这个展开。想想某个简单的功能背后是如何实现的，这就是 What happen when 问题。 众所周知，访问网页的流程是：输入网址敲回车-&gt;查 DNS-&gt;找到 IP 地址-&gt;通过 TCP 三次握手建立连接-&gt;浏览器发送 Http 请求-&gt;收到回应-&gt;浏览">
+<meta property="og:type" content="article">
+<meta property="og:title" content="What happens when （一）DNS">
+<meta property="og:url" content="http://www.eteluna.top/2020/04/09/Whathappenedthen1/index.html">
+<meta property="og:site_name" content="夏月&#39;s Blog">
+<meta property="og:description" content="访问网站时，从输入 URL 到显示页面间发生了什么？ 这是个老生常谈的话题。大一时在科创社有次分享就是围绕这个展开。想想某个简单的功能背后是如何实现的，这就是 What happen when 问题。 众所周知，访问网页的流程是：输入网址敲回车-&gt;查 DNS-&gt;找到 IP 地址-&gt;通过 TCP 三次握手建立连接-&gt;浏览器发送 Http 请求-&gt;收到回应-&gt;浏览">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/WHWdns.jpg">
+<meta property="article:published_time" content="2020-04-09T08:21:00.000Z">
+<meta property="article:modified_time" content="2022-10-28T12:43:20.726Z">
+<meta property="article:author" content="xiayue, eteluna, 程序, 夏月, 夏月凉团">
+<meta property="article:tag" content="web">
+<meta property="article:tag" content="网络">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/WHWdns.jpg">
+  
+  
+  
+  <title>What happens when （一）DNS - 夏月&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"www.eteluna.top","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":50,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#19abd6","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":false},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>夏月</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="What happens when （一）DNS"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        夏月
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2020-04-09 16:21" pubdate>
+          2020年4月9日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">What happens when （一）DNS</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/WHWdns.jpg" srcset="/img/loading.gif" lazyload alt="What happens when （一）DNS"></p>
+<p><strong>访问网站时，从输入 URL 到显示页面间发生了什么？</strong></p>
+<p>这是个老生常谈的话题。大一时在科创社有次分享就是围绕这个展开。想想某个简单的功能背后是如何实现的，这就是 What happen when 问题。</p>
+<p>众所周知，访问网页的流程是：输入网址敲回车-&gt;查 DNS-&gt;找到 IP 地址-&gt;通过 TCP 三次握手建立连接-&gt;浏览器发送 Http 请求-&gt;收到回应-&gt;浏览器渲染页面-&gt;结束连接</p>
+<p>但是具体细节如 DNS 怎么查，TCP&#x2F;IP 中各个协议间的关系，三次握手四次挥手的目的，http 与 https，长连接与短连接的问题，就不太能说清了。本系列将会梳理整个过程涉及到的知识点。这次从 DNS 说起。</p>
+<h2 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h2><p>**DNS(Domain Name System)**，用来将域名翻译为 IP 地址。最早的地址是手动分配的：</p>
+<blockquote>
+<p>“在工作时间内，通过电话联系SRI的NIC(网络信息中心)，将自己的主机名与地址告诉他们，写入集中式主机表。”</p>
+</blockquote>
+<p>这时候有了域的概念，如教育机构的计算机应该属于 <code>edu.</code> 域。后来，手动维护一个集中主机表变得越来越复杂，于是有了 DNS 协议。DNS 在 1983 年 11 月在<strong>因特网标准草案 <code>RFC822</code></strong> 发布。原文地址: <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc882">https://tools.ietf.org/html/rfc882</a> </p>
+<p>域名空间采用<strong>树结构</strong>， 全球 <strong>13 组根域名服务器</strong>以英文字母 A 到 M 依序命名。</p>
+<p>在域名中 com. org. cn. 这些是顶级域名，结尾的.号可以省略，URL 再往前是二级域名、三级域名。<br/><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/whttree.png" srcset="/img/loading.gif" lazyload class="" title="[树型结构]"></p>
+<h2 id="二、查询域名过程"><a href="#二、查询域名过程" class="headerlink" title="二、查询域名过程"></a>二、查询域名过程</h2><p>查询域名的IP，第一步是检查<strong>浏览器的本地缓存</strong>，之后检查<strong>本机缓存</strong>(host)，在 Windows 中为<code>C:\Windows\System32\drivers\etc\hosts</code>，在 Linux 中是  <code>/etc/hosts</code>。接下来是本地 DNS 服务器缓存，也就是 LDNS，使用递归查找。本地 DNS 服务器若还没找到，则去请求根域名服务器，从树的顶点<strong>迭代</strong>向下查，找到顶级域名服务器地址，继续查找，直到找到。如图所示:<br/><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/whtchaxun.png" srcset="/img/loading.gif" lazyload class="" title="[查询]"></p>
+<p><a target="_blank" rel="noopener" href="http://dns.ip.cn/">dns.ip.cn</a> 这里列出了一些公共 DNS 服务器的IP地址，有我们熟悉的114.114.114.114，8.8.8.8以及各大运营商的各省 DNS 服务器。</p>
+<p>DNS 主要在端口号 53 上使用 UDP 来完成请求。DNS 查询由客户端的单个 UDP 请求和服务器的单个 UDP 响应组成。当答案的长度超过 512 字节时，若客户端和服务器均支持 EDNS 时，将使用较大的UDP数据包。否则，将使用 TCP 再次发送。</p>
+<h2 id="三、DNS-记录"><a href="#三、DNS-记录" class="headerlink" title="三、DNS 记录"></a>三、DNS 记录</h2><p>在官方网站，可以看到根域名服务器的顶级域名文件  <a target="_blank" rel="noopener" href="https://www.iana.org/domains/root/files">https://www.iana.org/domains/root/files</a> ，下载来的 root.zone 文件只有2.09MB。根 DNS 服务器的记录，截止目前共有 22016 行，每一个顶级域名都会有若干条记录，比如 me. 这个顶级域名，前五行指向了五个 me. 顶级域名的 DNS 服务器域名，他们的 IP 地址在后续记录，每个都支持 IPV4 与 IPV6.<br/><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/whtme.jpg" srcset="/img/loading.gif" lazyload class="" title="[me]"></p>
+<p>记录有 A、CNAME、MX、NS、TXT、SPF 等多种类型，位于倒数第二列。其中：</p>
+<blockquote>
+<p>A&#x2F;AAAA： IPv4 与 IPv6 地址<br/>CNAME:   别名，指向原名<br/>MX:  邮件路由记录，指向邮件服务器<br/>NS: 指向域名解析服务器<br/>DS: TXT:  说明性的字符<br/>SPF:  TXT 的一种运用，发信侧在 SPF 记录备注规则（如自身 IP），接收方可以通过查询，决定是否接受<br/></p>
+</blockquote>
+<h2 id="四、DNS-负载均衡-CDN-内容分发网络"><a href="#四、DNS-负载均衡-CDN-内容分发网络" class="headerlink" title="四、DNS 负载均衡: CDN (内容分发网络)"></a>四、DNS 负载均衡: CDN (内容分发网络)</h2><p>仅仅一台服务器很难应付高并发、远距离的可靠连接，故而需要负载均衡技术。CDN 使用了 DNS 负载均衡:</p>
+<blockquote>
+<p>①当用户点击网站页面上的内容 URL，经过本地 DNS 系统解析，DNS 系统会最终将域名的解析权交给CNAME指向的 CDN 专用 DNS 服务器。</p>
+<p>②CDN 的 DNS 服务器将 CDN 的全局负载均衡设备 IP 地址返回用户。</p>
+<p>③用户向 CDN 的全局负载均衡设备发起内容 URL 访问请求。</p>
+<p>④CDN 全局负载均衡设备根据用户IP地址，以及用户请求的内容 URL，选择一台用户所属区域的区域负载均衡设备，告诉用户向这台设备发起请求。</p>
+<p>⑤区域负载均衡设备会为用户选择一台合适的缓存服务器提供服务，选择的依据包括：根据用户IP地址，判断哪一台服务器距用户最近；根据用户所请求的 URL 中携带的内容名称，判断哪一台服务器上有用户所需内容；查询各个服务器当前的负载情况，判断哪一台服务器尚有服务能力。基于以上这些条件的综合分析之后，区域负载均衡设备会向全局负载均衡设备返回一台缓存服务器的IP地址。</p>
+<p>⑥全局负载均衡设备把服务器的 IP 地址返回给用户。</p>
+<p>⑦用户向缓存服务器发起请求，缓存服务器响应用户请求，将用户所需内容传送到用户终端。如果这台缓存服务器上并没有用户想要的内容，而区域均衡设备依然将它分配给了用户，那么这台服务器就要向它的上一级缓存服务器请求内容，直至追溯到网站的源服务器将内容拉到本地。</p>
+<p>—— 《CDN 技术详解》 </p>
+</blockquote>
+<p>在 Linux 下用 <code>dig </code>命令看看 DNS 如何解析饿了么官网  <code>ele.me</code> </p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">leo@leo-virtual-machine:~$ <span class="hljs-keyword">dig </span>@a.root-servers.net ele.me<br><br><span class="hljs-comment">; &lt;&lt;&gt;&gt; DiG 9.10.3-P4-Ubuntu &lt;&lt;&gt;&gt; @a.root-servers.net ele.me</span><br><span class="hljs-comment">; (2 servers found)</span><br><span class="hljs-comment">;; global options: +cmd</span><br><span class="hljs-comment">;; Got answer:</span><br><span class="hljs-comment">;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 2200</span><br><span class="hljs-comment">;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 5, ADDITIONAL: 11</span><br><span class="hljs-comment">;; WARNING: recursion requested but not available</span><br><br><span class="hljs-comment">;; OPT PSEUDOSECTION:</span><br><span class="hljs-comment">; EDNS: version: 0, flags:; udp: 4096</span><br><span class="hljs-comment">;; QUESTION SECTION:</span><br><span class="hljs-comment">;ele.me.				IN	A</span><br><br><span class="hljs-comment">;; AUTHORITY SECTION:</span><br>me.			<span class="hljs-number">172800</span>	IN	NS	c0.nic.me.<br>me.			<span class="hljs-number">172800</span>	IN	NS	<span class="hljs-built_in">a0</span>.nic.me.<br>me.			<span class="hljs-number">172800</span>	IN	NS	<span class="hljs-keyword">b2.nic.me.</span><br><span class="hljs-keyword"></span>me.			<span class="hljs-number">172800</span>	IN	NS	<span class="hljs-keyword">b0.nic.me.</span><br><span class="hljs-keyword"></span>me.			<span class="hljs-number">172800</span>	IN	NS	<span class="hljs-built_in">a2</span>.nic.me.<br><br><span class="hljs-comment">;; ADDITIONAL SECTION:</span><br>c0.nic.me.		<span class="hljs-number">172800</span>	IN	A	<span class="hljs-number">199</span>.<span class="hljs-number">253</span>.<span class="hljs-number">61</span>.<span class="hljs-number">1</span><br>c0.nic.me.		<span class="hljs-number">172800</span>	IN	AAAA	<span class="hljs-number">2001</span>:<span class="hljs-number">500</span>:<span class="hljs-number">55</span>::<span class="hljs-number">1</span><br><span class="hljs-built_in">a0</span>.nic.me.		<span class="hljs-number">172800</span>	IN	A	<span class="hljs-number">199</span>.<span class="hljs-number">253</span>.<span class="hljs-number">59</span>.<span class="hljs-number">1</span><br><span class="hljs-built_in">a0</span>.nic.me.		<span class="hljs-number">172800</span>	IN	AAAA	<span class="hljs-number">2001</span>:<span class="hljs-number">500</span>:<span class="hljs-number">53</span>::<span class="hljs-number">1</span><br><span class="hljs-keyword">b2.nic.me.	</span>	<span class="hljs-number">172800</span>	IN	A	<span class="hljs-number">199</span>.<span class="hljs-number">249</span>.<span class="hljs-number">127</span>.<span class="hljs-number">1</span><br><span class="hljs-keyword">b2.nic.me.	</span>	<span class="hljs-number">172800</span>	IN	AAAA	<span class="hljs-number">2001</span>:<span class="hljs-number">500</span>:<span class="hljs-number">4</span>f::<span class="hljs-number">1</span><br><span class="hljs-keyword">b0.nic.me.	</span>	<span class="hljs-number">172800</span>	IN	A	<span class="hljs-number">199</span>.<span class="hljs-number">253</span>.<span class="hljs-number">60</span>.<span class="hljs-number">1</span><br><span class="hljs-keyword">b0.nic.me.	</span>	<span class="hljs-number">172800</span>	IN	AAAA	<span class="hljs-number">2001</span>:<span class="hljs-number">500</span>:<span class="hljs-number">54</span>::<span class="hljs-number">1</span><br><span class="hljs-built_in">a2</span>.nic.me.		<span class="hljs-number">172800</span>	IN	A	<span class="hljs-number">199</span>.<span class="hljs-number">249</span>.<span class="hljs-number">119</span>.<span class="hljs-number">1</span><br><span class="hljs-built_in">a2</span>.nic.me.		<span class="hljs-number">172800</span>	IN	AAAA	<span class="hljs-number">2001</span>:<span class="hljs-number">500</span>:<span class="hljs-number">47</span>::<span class="hljs-number">1</span><br><br><span class="hljs-comment">;; Query time: 178 msec</span><br><span class="hljs-comment">;; SERVER: 198.41.0.4#53(198.41.0.4)</span><br><span class="hljs-comment">;; WHEN: Thu Mar 26 19:23:12 CST 2020</span><br><span class="hljs-comment">;; MSG SIZE  rcvd: 344</span><br></code></pre></td></tr></table></figure>
+
+<p>找到 me. 的五顶级域名服务器，选一个看：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">leo@leo-virtual-machine:~$</span> <span class="hljs-string">dig</span> <span class="hljs-string">@a0.nic.me</span> <span class="hljs-string">ele.me</span><br><br><span class="hljs-string">;</span> <span class="hljs-string">&lt;&lt;&gt;&gt;</span> <span class="hljs-string">DiG</span> <span class="hljs-number">9.10</span><span class="hljs-number">.3</span><span class="hljs-string">-P4-Ubuntu</span> <span class="hljs-string">&lt;&lt;&gt;&gt;</span> <span class="hljs-string">@a0.nic.me</span> <span class="hljs-string">ele.me</span><br><span class="hljs-string">;</span> <span class="hljs-string">(2</span> <span class="hljs-string">servers</span> <span class="hljs-string">found)</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">global options:</span> <span class="hljs-string">+cmd</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">Got answer:</span><br><span class="hljs-string">;;</span> <span class="hljs-string">-&gt;&gt;HEADER&lt;&lt;-</span> <span class="hljs-attr">opcode:</span> <span class="hljs-string">QUERY,</span> <span class="hljs-attr">status:</span> <span class="hljs-string">NOERROR,</span> <span class="hljs-attr">id:</span> <span class="hljs-number">42409</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">flags:</span> <span class="hljs-string">qr</span> <span class="hljs-string">rd;</span> <span class="hljs-attr">QUERY:</span> <span class="hljs-number">1</span><span class="hljs-string">,</span> <span class="hljs-attr">ANSWER:</span> <span class="hljs-number">0</span><span class="hljs-string">,</span> <span class="hljs-attr">AUTHORITY:</span> <span class="hljs-number">2</span><span class="hljs-string">,</span> <span class="hljs-attr">ADDITIONAL:</span> <span class="hljs-number">1</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">WARNING:</span> <span class="hljs-string">recursion</span> <span class="hljs-string">requested</span> <span class="hljs-string">but</span> <span class="hljs-string">not</span> <span class="hljs-string">available</span><br><br><span class="hljs-string">;;</span> <span class="hljs-attr">OPT PSEUDOSECTION:</span><br><span class="hljs-string">;</span> <span class="hljs-attr">EDNS: version:</span> <span class="hljs-number">0</span><span class="hljs-string">,</span> <span class="hljs-string">flags:;</span> <span class="hljs-attr">udp:</span> <span class="hljs-number">4096</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">QUESTION SECTION:</span><br><span class="hljs-string">;ele.me.</span>				<span class="hljs-string">IN</span>	<span class="hljs-string">A</span><br><br><span class="hljs-string">;;</span> <span class="hljs-attr">AUTHORITY SECTION:</span><br><span class="hljs-string">ele.me.</span>			<span class="hljs-number">86400</span>	<span class="hljs-string">IN</span>	<span class="hljs-string">NS</span>	<span class="hljs-string">ns1.alibabadns.com.</span><br><span class="hljs-string">ele.me.</span>			<span class="hljs-number">86400</span>	<span class="hljs-string">IN</span>	<span class="hljs-string">NS</span>	<span class="hljs-string">ns2.alibabadns.com.</span><br><br><span class="hljs-string">;;</span> <span class="hljs-attr">Query time:</span> <span class="hljs-number">302</span> <span class="hljs-string">msec</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">SERVER:</span> <span class="hljs-number">199.253</span><span class="hljs-number">.59</span><span class="hljs-number">.1</span><span class="hljs-comment">#53(199.253.59.1)</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">WHEN:</span> <span class="hljs-string">Thu</span> <span class="hljs-string">Mar</span> <span class="hljs-number">26</span> <span class="hljs-number">19</span><span class="hljs-string">:23:44</span> <span class="hljs-string">CST</span> <span class="hljs-number">2020</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">MSG SIZE  rcvd:</span> <span class="hljs-number">85</span><br></code></pre></td></tr></table></figure>
+
+<p>获得两个阿里巴巴的 DNS 域名，<code>ns1.alibabadns.com</code> 与 <code>ns2.alibabadns.com</code>,继续查</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">leo@leo-virtual-machine:~$</span> <span class="hljs-string">dig</span> <span class="hljs-string">@ns2.alibabadns.com</span> <span class="hljs-string">ele.me</span><br><br><span class="hljs-string">;</span> <span class="hljs-string">&lt;&lt;&gt;&gt;</span> <span class="hljs-string">DiG</span> <span class="hljs-number">9.10</span><span class="hljs-number">.3</span><span class="hljs-string">-P4-Ubuntu</span> <span class="hljs-string">&lt;&lt;&gt;&gt;</span> <span class="hljs-string">@ns2.alibabadns.com</span> <span class="hljs-string">ele.me</span><br><span class="hljs-string">;</span> <span class="hljs-string">(2</span> <span class="hljs-string">servers</span> <span class="hljs-string">found)</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">global options:</span> <span class="hljs-string">+cmd</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">Got answer:</span><br><span class="hljs-string">;;</span> <span class="hljs-string">-&gt;&gt;HEADER&lt;&lt;-</span> <span class="hljs-attr">opcode:</span> <span class="hljs-string">QUERY,</span> <span class="hljs-attr">status:</span> <span class="hljs-string">NOERROR,</span> <span class="hljs-attr">id:</span> <span class="hljs-number">20973</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">flags:</span> <span class="hljs-string">qr</span> <span class="hljs-string">aa</span> <span class="hljs-string">rd;</span> <span class="hljs-attr">QUERY:</span> <span class="hljs-number">1</span><span class="hljs-string">,</span> <span class="hljs-attr">ANSWER:</span> <span class="hljs-number">2</span><span class="hljs-string">,</span> <span class="hljs-attr">AUTHORITY:</span> <span class="hljs-number">0</span><span class="hljs-string">,</span> <span class="hljs-attr">ADDITIONAL:</span> <span class="hljs-number">1</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">WARNING:</span> <span class="hljs-string">recursion</span> <span class="hljs-string">requested</span> <span class="hljs-string">but</span> <span class="hljs-string">not</span> <span class="hljs-string">available</span><br><br><span class="hljs-string">;;</span> <span class="hljs-attr">OPT PSEUDOSECTION:</span><br><span class="hljs-string">;</span> <span class="hljs-attr">EDNS: version:</span> <span class="hljs-number">0</span><span class="hljs-string">,</span> <span class="hljs-string">flags:;</span> <span class="hljs-attr">udp:</span> <span class="hljs-number">4096</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">QUESTION SECTION:</span><br><span class="hljs-string">;ele.me.</span>				<span class="hljs-string">IN</span>	<span class="hljs-string">A</span><br><br><span class="hljs-string">;;</span> <span class="hljs-attr">ANSWER SECTION:</span><br><span class="hljs-string">ele.me.</span>			<span class="hljs-number">300</span>	<span class="hljs-string">IN</span>	<span class="hljs-string">A</span>	<span class="hljs-number">106.15</span><span class="hljs-number">.160</span><span class="hljs-number">.220</span><br><span class="hljs-string">ele.me.</span>			<span class="hljs-number">300</span>	<span class="hljs-string">IN</span>	<span class="hljs-string">A</span>	<span class="hljs-number">106.14</span><span class="hljs-number">.48</span><span class="hljs-number">.241</span><br><br><span class="hljs-string">;;</span> <span class="hljs-attr">Query time:</span> <span class="hljs-number">134</span> <span class="hljs-string">msec</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">SERVER:</span> <span class="hljs-number">106.11</span><span class="hljs-number">.35</span><span class="hljs-number">.18</span><span class="hljs-comment">#53(106.11.35.18)</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">WHEN:</span> <span class="hljs-string">Thu</span> <span class="hljs-string">Mar</span> <span class="hljs-number">26</span> <span class="hljs-number">19</span><span class="hljs-string">:24:46</span> <span class="hljs-string">CST</span> <span class="hljs-number">2020</span><br><span class="hljs-string">;;</span> <span class="hljs-attr">MSG SIZE  rcvd:</span> <span class="hljs-number">67</span><br></code></pre></td></tr></table></figure>
+
+<p>找到了饿了么的两个 IP 地址。也可以使用 nslookup 命令查询，在 Windows 下分别查询 ele.me 与 <a href="http://www.ele.me：">www.ele.me：</a></p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-section">C:\Users\leo-6&gt;nslookup ele.me</span><br><span class="hljs-section">服务器:  public1.114dns.com</span><br><span class="hljs-section">Address:  114.114.114.114</span><br><br><span class="hljs-section">非权威应答:</span><br><span class="hljs-section">名称:    ele.me</span><br><span class="hljs-section">Addresses:  106.14.48.241</span><br>          106.15.160.220<br><br><span class="hljs-section">C:\Users\leo-6&gt;nslookup www.ele.me</span><br><span class="hljs-section">服务器:  cache1-xx</span><br><span class="hljs-section">Address:  124.89.1.129</span><br><br><span class="hljs-section">非权威应答:</span><br><span class="hljs-section">名称:    v6-zb-alibaba-clould.tengine.alibaba.com</span><br><span class="hljs-section">Addresses:  2408:4001:1000::4</span><br>          47.92.62.13<br>          47.92.21.245<br><span class="hljs-section">Aliases:  www.ele.me</span><br>          dualstack-sopush.elemecdn.com<br></code></pre></td></tr></table></figure>
+
+<p>试一试访问 ele.me 会发生什么。首先是302的状态码，把我们重定向至 <a target="_blank" rel="noopener" href="http://www.ele.me/">www.ele.me</a> 。<br/><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/whw1.jpg" srcset="/img/loading.gif" lazyload class="" title="[me]"></p>
+<p>之后是访问 <a target="_blank" rel="noopener" href="http://www.ele.me/">www.ele.me</a> 的地址 47.92.21.245 ，获得了一些 js 文件。<br/><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/whw2.jpg" srcset="/img/loading.gif" lazyload class="" title="[me]"></p>
+<p>文件让我们继续访问  <a target="_blank" rel="noopener" href="https://shadow.elemecdn.com/god/WEB://www.ele.me">https://shadow.elemecdn.com/god/WEB://www.ele.me</a> 。<br/><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/whw3.jpg" srcset="/img/loading.gif" lazyload class="" title="[me]"></p>
+<p>地址是 113.200.15.85，根据域名判断，显然是它的一个 CDN 服务器。<br/><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/whw4.jpg" srcset="/img/loading.gif" lazyload class="" title="[me]"></p>
+<p>原本打算一次写完，结果一个 DNS 就写了好多。先到这里吧。</p>
+<p>参考资料：<br/><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000002578457">https://segmentfault.com/a/1190000002578457</a> 利用dns解析来实现网站的负载均衡<br/><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/b483300378af">https://www.jianshu.com/p/b483300378af</a> DNS的A、CNAME、MX、NS、TXT、SPF记录</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/" class="category-chain-item">学习相关</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/web/">#web</a>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C/">#网络</a>
+      
+    </div>
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/05/04/Whathappenwhen2/" title="What happens when （二）TCP">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">What happens when （二）TCP</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2020/03/16/java1/" title="Java并发(1)线程基础">
+                        <span class="hidden-mobile">Java并发(1)线程基础</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.8.0/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"7858922f79533ddfdac2","clientSecret":"38b7017c3ebc03037bdce484739ed6929a9314ba","repo":"xiayue09.github.io","owner":"Xiayue09","admin":["Xiayue09"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: '18903bab266dd6b9366bbb4be38882df'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

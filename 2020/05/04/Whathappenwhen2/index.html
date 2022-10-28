@@ -1,0 +1,731 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/icon.jpg">
+  <link rel="icon" href="/img/icon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#29d">
+  <meta name="author" content="夏月">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="一、 TCP&#x2F;IP 协议栈TCP&#x2F;IP 协议栈，我们都很熟悉。应用层、传输层、网络层、接口层（数据链路层），如此多的协议，在访问网页时这些协议间是怎样相互配合的？   如前文所述，当用户输入 URL 按下回车键后，主机首先要完成 DNS 解析，使用应用层的 DNS 协议。同时，解析过程中可能会用到网络层的 ARP 协议，以寻找 DNS 服务器。解析完成，得到目标 IP 地址，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="What happens when （二）TCP">
+<meta property="og:url" content="http://www.eteluna.top/2020/05/04/Whathappenwhen2/index.html">
+<meta property="og:site_name" content="夏月&#39;s Blog">
+<meta property="og:description" content="一、 TCP&#x2F;IP 协议栈TCP&#x2F;IP 协议栈，我们都很熟悉。应用层、传输层、网络层、接口层（数据链路层），如此多的协议，在访问网页时这些协议间是怎样相互配合的？   如前文所述，当用户输入 URL 按下回车键后，主机首先要完成 DNS 解析，使用应用层的 DNS 协议。同时，解析过程中可能会用到网络层的 ARP 协议，以寻找 DNS 服务器。解析完成，得到目标 IP 地址，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/WHWtcp.jpg">
+<meta property="article:published_time" content="2020-05-04T08:00:00.000Z">
+<meta property="article:modified_time" content="2022-10-28T12:43:04.292Z">
+<meta property="article:author" content="xiayue, eteluna, 程序, 夏月, 夏月凉团">
+<meta property="article:tag" content="web">
+<meta property="article:tag" content="网络">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/WHWtcp.jpg">
+  
+  
+  
+  <title>What happens when （二）TCP - 夏月&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"www.eteluna.top","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":50,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#19abd6","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":false},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>夏月</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="What happens when （二）TCP"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        夏月
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2020-05-04 16:00" pubdate>
+          2020年5月4日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">What happens when （二）TCP</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/WHWtcp.jpg" srcset="/img/loading.gif" lazyload alt="What happens when （二）TCP"></p>
+<h2 id="一、-TCP-x2F-IP-协议栈"><a href="#一、-TCP-x2F-IP-协议栈" class="headerlink" title="一、 TCP&#x2F;IP 协议栈"></a>一、 TCP&#x2F;IP 协议栈</h2><p>TCP&#x2F;IP 协议栈，我们都很熟悉。应用层、传输层、网络层、接口层（数据链路层），如此多的协议，在访问网页时这些协议间是怎样相互配合的？</p>
+<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/WhwTCPIP.png" srcset="/img/loading.gif" lazyload alt="TCPIP"  />
+
+<p>如前文所述，当用户输入 URL 按下回车键后，主机首先要完成 <strong>DNS 解析</strong>，使用应用层的 DNS 协议。同时，解析过程中可能会用到网络层的 <strong>ARP 协议</strong>，以寻找 DNS 服务器。解析完成，得到目标 IP 地址，计算机会用套接字（Socket）与对方建立 <strong>TCP 连接</strong>。</p>
+<p>网络层通过 IP 协议寻找到目标主机，三次握手后，主机与服务器建立端到端的 TCP 通信通道。主机会发送 HTTP 请求，它通过 TCP 通道发送到服务器的对应端口。在此过程中，应用层生成一个 <strong>HTTP 报文（Message）</strong>，向下发送到传输层。传输层为请求添加 TCP 首部，成为 <strong>TCP 数据段（TCP segment）</strong>。之后网络层再添加 IP 首部，成为 <strong>IP 数据包（IP packet）</strong>。数据通过封装与路由转发，到达目标地址，再由目标主机的数据链路层、网络层、传输层、应用层依次解析并传递上去。</p>
+<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/TCPfengzhuang.png" srcset="/img/loading.gif" lazyload style="zoom:80%;" />
+
+<p>IP 首部以源地址与目的地址开头，TCP 首部以源端口与目的端口开头，分别承担网络层与传输层的职责。</p>
+<h2 id="二、TCP-首部"><a href="#二、TCP-首部" class="headerlink" title="二、TCP 首部"></a>二、TCP 首部</h2><h3 id="TCP-首部内容"><a href="#TCP-首部内容" class="headerlink" title="TCP 首部内容"></a>TCP 首部内容</h3><p>根据 <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc793">RFC793</a> 对 TCP 的定义，TCP 的首部内容主要有：</p>
+<ul>
+<li>源端口、目的端口（Source Port,  Destination Port）：发送方与接收方的端口号，各 16 位 2 字节；</li>
+<li>序列号（Sequence Number）：32 位。当 SYN 标志位为 1 时，序列号为随机算法生成的初始序号（ISN）。序列号减去 ISN 得到相对序列号。</li>
+<li>确认号（Acknowledgment Number）：32位，当 ACK 标志位为 1 时，表示发送方希望接受到的下一个序列号。确认号一般是最后接收到的 TCP 数据段的 序列号+数据长度（字节），可以表示该序列号及之前的数据段已收到。当连接建立后，TCP 数据段总包含确认号。</li>
+<li>数据偏移（Data Offset）：4位，指数据起始处距离 TCP 报文段起始处长度，以 32 位字（ 4 字节）为计算单位。</li>
+<li>保留与标志位（Reserved, Control Bits）：共 12 位，在 <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc793">RFC793</a> 中原本有 6 个保留位，6 个标志位。 <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc3168#page-61">RFC3168</a> 将后两个保留位替换为 CWR 与 ECE 标志，用于 ECN（显式拥塞通知）。之后在 <a href="www.ietf.org/rfc/rfc3540.txt">RFC3540</a> 将倒数第三个保留位替换为 NS 标志，同样用于 ECN。当前共有 3 个保留位，9 个标志位。标志位分别是：<ol>
+<li>NS（Nonce Sum）</li>
+<li>CWR（Congestion Window Reduced）</li>
+<li>ECE（ECN-Echo）</li>
+<li>URG（Urgent）：紧急指针标志</li>
+<li>ACK（Acknowledgment）：确认标志</li>
+<li>PSH（Push）：推送标志，尽快将数据转由应用处理</li>
+<li>RST（Reset）：重置连接标志</li>
+<li>SYN（Synchronize）：同步序号标志</li>
+<li>FIN（Finish）：结束标志</li>
+</ol>
+</li>
+<li>窗口（Window）：窗口大小（详见滑动窗口）</li>
+<li>检验和（Checksum）：校验报文</li>
+<li>紧急指针（Urgent Pointer）：指向紧急数据后的字节</li>
+<li>选项（Options）：如规定最大报文段长度（MSS）</li>
+<li>填充：凑整，使长度为4字节的整数倍</li>
+</ul>
+<h3 id="Wireshark-抓包"><a href="#Wireshark-抓包" class="headerlink" title="Wireshark 抓包"></a>Wireshark 抓包</h3><p>Wireshark 是常用的抓包工具，使用这个工具查看 TCP 首部。官方网站：<a target="_blank" rel="noopener" href="http://www.wireshark.org/">www.wireshark.org</a></p>
+<p>启动Wireshark，双击连接名称，可以进行抓包。左上角控制开始停止，下一栏是过滤器，可以过滤报文，如输入 “dns” ,”ip.addr &#x3D;&#x3D; 192.168.0.1”.</p>
+<p>右击记录，可以追踪流，获取与目标的全部会话。会话记录可以保存。单击一条记录，会有对这条记录的分析。再下面是数据包内容，用 16 进制表示。数据包封装有数据链路层协议、IP 协议、TCP 协议等内容，TCP 协议一般在最后。</p>
+<p>以访问 <a target="_blank" rel="noopener" href="http://www.baidu.com/">www.baidu.com</a> 为例，观察建立 TCP 连接过程。访问前开始捕获，待页面加载完成后停止。筛选条件为 “ip.addr &#x3D;&#x3D; 61.135.169.125” 的记录，按编号排序，最上方是三次握手建立连接的过程。</p>
+<p>选择一项，右键追踪流-&gt;TCP，列出该 TCP 连接的全部记录。首先是本机 2567 端口向目标 443 端口发送 SYN &#x3D; 1 ，其序号为随机生成的初始序号ISN 1562792475：</p>
+<p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/Wireshark1.png" srcset="/img/loading.gif" lazyload></p>
+<p>主机收到 SYN&#x3D;1 ACK&#x3D;1 的回应后，发送 ACK&#x3D;1 的回应，三次握手，连接建立。</p>
+<p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/Wireshark2.png" srcset="/img/loading.gif" lazyload></p>
+<p>建立连接后的每个 TCP 数据段，都会有确认号。两边的确认号分别计算，如：</p>
+<ul>
+<li>A 向 B 发送序号 22 确认号 36 长度 5 的 TCP 数据段</li>
+<li>B 向 A 发送序号 36 确认号 27 长度 11 的 TCP 数据段</li>
+<li>A 向 B 发送序号 27 确认号 47 长度 6 的 TCP 数据段</li>
+</ul>
+<p>”三次握手“的前两次，不携带任何数据，长度为零，但都需要消耗一个序号。第三次可以携带数据内容。</p>
+<h2 id="三、三次握手、四次挥手"><a href="#三、三次握手、四次挥手" class="headerlink" title="三、三次握手、四次挥手"></a>三、三次握手、四次挥手</h2><h3 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h3><p>TCP 提供面向连接的、可靠的数据传输服务，在建立连接时采用三次握手的方式：</p>
+<p>第一次：客户端 发送 SYN 标志的数据段<br>第二次：服务端 发送 SYN 与 ACK 标志的数据段<br>第三次：客户端 发送 ACK 标志的数据段</p>
+<p>设第一次发送序号是 M，则服务端返回的确认号是 M+1；<br>设服务端返回的序号是 N， 则第三次握手的确认号是 N+1，序号是 M+1（与对方返回的确认号相同）。</p>
+<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/TCPSYN.png" srcset="/img/loading.gif" lazyload  />
+
+<p>第一次握手，服务端确认发送端的发送能力；第二次，发送端确认服务端的发送和接收能力；第三次，服务端确认发送端的接收能力。经过了三次握手，这条连接才是可靠的。</p>
+<h3 id="四次挥手"><a href="#四次挥手" class="headerlink" title="四次挥手"></a>四次挥手</h3><p>TCP 连接建立后会占用端口，故在连接结束时需要及时关闭。关闭的过程也被称作“四次挥手”。</p>
+<p>当客户端主动关闭时：<br>第一次：客户端发送 FIN 标志数据段<br>第二次：服务端返回 ACK 标志数据段<br>第三次：服务端发送 FIN 标志数据段<br/>第四次：客户端返回 ACK 标志数据段</p>
+<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/TCPFIN.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
+
+<ul>
+<li>客户端主动发送 FIN，表示数据发送结束，进入 FIN_WAIT_1（终止等待1）状态。</li>
+<li>服务端接收到 FIN，返回 ACK 确认，进入 CLOSE_WAIT（关闭等待）状态。</li>
+<li>客户端接收到 ACK，进入 FIN_WAIT_2（终止等待2）状态。此时，连接半关闭，即客户端没有数据要发送，但如果服务端发送数据，客户端仍要接受。</li>
+<li>服务端将数据发送完毕后，发送 FIN，进入 LAST_ACK（最后确认）状态。</li>
+<li>客户端接收到 FIN，返回确认 ACK，进入 TIME_WAIT（时间等待）状态，等待两个最长报文寿命时间（MSL）后关闭连接。服务端收到最后的 ACK，立即关闭。</li>
+</ul>
+<p>在客户端最后的等待两个 MSL 时间中，如果服务端没有收到 ACK，则会重传 FIN，客户端再重新发送 ACK，避免客户端已关闭而服务端持续等待 ACK 的情况。</p>
+<h2 id="四、TCP-如何确保可靠"><a href="#四、TCP-如何确保可靠" class="headerlink" title="四、TCP 如何确保可靠"></a>四、TCP 如何确保可靠</h2><h3 id="传输确认"><a href="#传输确认" class="headerlink" title="传输确认"></a>传输确认</h3><p><strong>累计确认：</strong>TCP 连接接受到的常常是乱序的报文，接收方会在接受一定数量的 TCP 数据段后，才会发送一次确认，用确认号告诉对方自己接收到了的最后字节序号。发送方不用等待前一个报文段确认就可以发送下一个报文，这被称作连续ARQ协议。</p>
+<p><strong>重复累计确认：</strong>接收方收到中断的一段后面的段后，会发送中断处的确认号。发送方在收到三次相同的确认号便会重传。</p>
+<p><strong>超时重传：</strong>发送方会在发送时设置一个超时重传计数器（RTO，Retransmission Time Out），超时未收到确认则会重新发送。重传后若还是没有收到确认，则将超时计时器时间设为原来的两倍。</p>
+<p><strong>选择确认（SACK）：</strong>在 TCP 连接采取累计确认时，如果丢失了一个分组的数据，即使接收方接收到这个分组之后的数据，这些数据也可能会被发送方重传，造成时间和资源的浪费。**SACK ** 允许接收方确认收到的不连续分组， 使接收方能告诉发送方哪些数据丢失，哪些数据重发了，哪些数据已经提前收到。SACK 选项不是强制的，需要在创建连接时在 TCP 首部选项声明。 </p>
+<p><strong>最大分段大小：</strong>当建立 TCP 连接时，双方会在 TCP 首部的选项中声明各自的最大分段大小（MSS）。在发送时，发送方会把数据分为适当大小的段来发送。</p>
+<p><strong>校验和：</strong>计算报文头部与数据的和，再求反码，得到校验和。</p>
+<h3 id="流量控制与滑动窗口"><a href="#流量控制与滑动窗口" class="headerlink" title="流量控制与滑动窗口"></a>流量控制与滑动窗口</h3><p>TCP 使用滑动窗口实现流量控制，接收方在发送确认的 TCP 首部窗口处声明还可以接收的字节数量，发送方最多只能发送接收窗口大小的字节。这个数量受保存数据的缓冲区大小限制。接收方可以修改接收窗口的值，在确认包告知发送方。</p>
+<p>根据连续ARQ协议规定，发送方每收到一个确认，就把发送窗口向前滑动一个分组的位置。当发送方收到第一个分组的确认，就把发送窗口向前移动一个分组的位置。如果原来已经发送了前5个分组，则现在可以发送第6个分组。  </p>
+<p>如果接收窗口值为 0，则需要应用来接收、清空缓存区，才可以继续接受数据。当接收窗口为 0 时，发送方不发送数据，开启一个定时器。一段时间后，恢复发送一个 ZWP 包，期待对方回复一个带有新的接收窗口的确认包。</p>
+<p>如果接收方总在出现较小字节的空闲窗口时，就发送确认，会让每次发送的数据量很小，甚至小于 TCP 首部大小，这被叫做 “糊涂窗口综合症” （ Silly Window Syndrome 奇葩名字）。故发送方和接收方都会通过算法（如 Nagle算法、延迟ACK）来修正窗口大小，发送方默认延迟发送，接收方等待窗口大小足够时再确认。</p>
+<p><strong>Nagle 算法：</strong> TCP 的发送方使用 Nagle 算法，限制传输过程中的小分组（小于 MSS最大报文段长度）的数量，确保只能有一个未收到确认的小分组，并期望将小分组合并为较大的分组一起发送。</p>
+<h3 id="拥塞控制"><a href="#拥塞控制" class="headerlink" title="拥塞控制"></a>拥塞控制</h3><p>流量控制针对端到端的通信量，而拥塞控制涉及到整个的网络环境。 发送方与接收方根据确认包或者包丢失的情况，以及定时器，估计网络拥塞情况，从而修改数据流的行为，这称为拥塞控制。</p>
+<p>TCP 的拥塞控制采用了四种算法，即慢启动，拥塞避免，快重传和快恢复。  </p>
+<p><strong>慢启动 (slow start) 与 拥塞避免 (congestion avoidance)：</strong>慢启动的目的是在传输开始时确定网络带宽大小。双方都拥有一个拥塞窗口参数（cwnd），从一个低初始值开始以指数增长，达到慢启动阈值（ssthresh），切换至拥塞避免算法，以线性增长。发送数据的流量最大值是接收窗口与拥塞窗口中较小的数值。</p>
+<p>一旦发生拥塞，将慢启动阈值降低为窗口的一半，如果是超时重传，拥塞窗口被设置为1个报文段，重新进入慢启动。</p>
+<p><strong>快速重传 (Fast Retransmit) 与快速恢复 (Fast Recovery)：</strong>快重传，即在收到大于三个重复 ACK 时即开始重传，之后进入快恢复，慢启动阈值降为窗口的一半，拥塞窗口为慢启动阈值+收到重复 ACK 的数量。</p>
+<h3 id="粘包现象"><a href="#粘包现象" class="headerlink" title="粘包现象"></a>粘包现象</h3><p>发送方使用 Nagle 算法将多个小分组合并为一个 TCP 数据段发送，接收方接受并存储在缓冲区的数据被应用从中间断开取走，都会造成不同包的数据粘连在一起，称作粘包现象。</p>
+<p>解决方法：</p>
+<ol>
+<li>使用 TCP_NODELAY 选项关闭 Nagle 算法</li>
+<li>格式化数据，让每条数据都有相同的开头和结尾，便于读取</li>
+<li>发送数据的长度，便于完整读取每条数据</li>
+</ol>
+<h2 id="五、TCP-与-UDP-应用"><a href="#五、TCP-与-UDP-应用" class="headerlink" title="五、TCP 与 UDP 应用"></a>五、TCP 与 UDP 应用</h2><h3 id="UDP（User-Datagram-Protocol）："><a href="#UDP（User-Datagram-Protocol）：" class="headerlink" title="UDP（User Datagram Protocol）："></a>UDP（User Datagram Protocol）：</h3><p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/udp.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>相对于 TCP 协议，UDP 协议看起来更简单，只是给数据添加了源端口和目的端口。UDP 首部的长度与校验和是可选项，这样的一个 UDP 包被称为 UDP 数据报（UDP Datagram）。</p>
+<p>UDP 有以下特征：</p>
+<ul>
+<li>不保证消息交付：不确认，不重传，无超时；</li>
+<li>不保证交付顺序：不设置包序号，不重排，不发生队首阻塞；</li>
+<li>不跟踪连接状态：不必建立连接或重启状态机；</li>
+<li>不需要拥塞控制：不内置客户端或网络反馈机。</li>
+</ul>
+<p>TCP 提供面向连接、可靠的服务，UDP 提供面向消息、无连接的服务，尽最大努力交付而不保证可靠。因为这样的特性，TCP 是点到点的连接，UDP 可以一对一、一对多、多对一、多对多。UDP 不存在拥塞控制，资源消耗较小，传输速度相对较快，但应用场景较少，多用于实时应用，如音视频通话。腾讯QQ 使用 UDP 协议传输消息，这就是为什么会碰到能上 QQ 但打不开网页的问题。（DNS 配置不正确）</p>
+<p>此外， HTTP、HTTPS、FTP、SMTP（简单邮件传输协议） 等，都是 TCP 的应用。</p>
+<p>接下来第三篇是关于 HTTP 的，不知道又会写多久…</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://xiaozhuanlan.com/topic/2970836415">网络协议之TCP&#x2F;IP</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/syfwhu/p/5143437.html">网络协议之TCP</a></p>
+<p>更多阅读：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qzcsu/article/details/72861891">两张动图-彻底明白TCP的三次握手与四次挥手</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/61987654">关于TCP传输协议看这一篇就够了</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3/" class="category-chain-item">学习相关</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/web/">#web</a>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C/">#网络</a>
+      
+    </div>
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/07/07/Mediadataexp/" title="媒体数据管理上机实验">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">媒体数据管理上机实验</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/09/Whathappenedthen1/" title="What happens when （一）DNS">
+                        <span class="hidden-mobile">What happens when （一）DNS</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.8.0/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"7858922f79533ddfdac2","clientSecret":"38b7017c3ebc03037bdce484739ed6929a9314ba","repo":"xiayue09.github.io","owner":"Xiayue09","admin":["Xiayue09"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: 'f5971b68d5ee480c6e08ee6a0a0c5bf5'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
