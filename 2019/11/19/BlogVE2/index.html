@@ -23,13 +23,13 @@
 <meta property="og:site_name" content="夏月&#39;s Blog">
 <meta property="og:description" content="可以看到这次实验大致上可以分为三部分：特征检测、特征描述、特征匹配 一、特征检测角点检测需要我们实现Harris角点检测功能计算Harris的2*2矩阵,如图所示   使用3*3的Sobel算子对图上每个点计算x方向与y方向导数，也就是 1234imx &#x3D; np.zeros(srcImage.shape)ndimage.sobel(srcImage, 1, imx)imy &#x3D; np.zeros(">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/BlogVE2.png">
+<meta property="og:image" content="http://www.eteluna.top/%5Cimg%5CBlogVE2.png">
 <meta property="article:published_time" content="2019-11-19T09:20:00.000Z">
-<meta property="article:modified_time" content="2022-10-28T12:49:09.158Z">
+<meta property="article:modified_time" content="2022-11-05T14:27:21.644Z">
 <meta property="article:author" content="xiayue, eteluna, 程序, 夏月, 夏月凉团">
 <meta property="article:tag" content="视觉">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/BlogVE2.png">
+<meta name="twitter:image" content="http://www.eteluna.top/%5Cimg%5CBlogVE2.png">
   
   
   
@@ -276,17 +276,17 @@
             
               <div class="markdown-body">
                 
-                <p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/BlogVE2.png" srcset="/img/loading.gif" lazyload alt="视觉实验二 特征检测与匹配"></p>
+                <p><img src="/%5Cimg%5CBlogVE2.png" srcset="/img/loading.gif" lazyload alt="视觉实验二 特征检测与匹配"></p>
 <p>可以看到这次实验大致上可以分为三部分：<br>特征检测、特征描述、特征匹配</p>
 <h3 id="一、特征检测"><a href="#一、特征检测" class="headerlink" title="一、特征检测"></a>一、特征检测</h3><p>角点检测需要我们实现Harris角点检测功能<br>计算Harris的2*2矩阵,如图所示</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/harris.jpg" srcset="/img/loading.gif" lazyload class="" title="[Harris]">
+<img src="/img/harris.jpg" srcset="/img/loading.gif" lazyload class="" title="[Harris]">
 
 <p>使用3*3的Sobel算子对图上每个点计算x方向与y方向导数，也就是</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python">imx = np.zeros(srcImage.shape)<br>ndimage.sobel(srcImage, <span class="hljs-number">1</span>, imx)<br>imy = np.zeros(srcImage.shape)<br>ndimage.sobel(srcImage, <span class="hljs-number">0</span>, imy)<br></code></pre></td></tr></table></figure>
 <p>超出边界默认为<code>reflect</code>模式。有了<code>Ixp</code>与<code>Iyp</code>，这之后直接使用高斯滤波，<code>sigma</code>设为0.5.</p>
 <figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">wxx = ndimage.gaussian<span class="hljs-constructor">_filter(<span class="hljs-params">imx</span> <span class="hljs-operator">*</span> <span class="hljs-params">imx</span>, <span class="hljs-params">sigma</span>=0.5)</span><br>wxy = ndimage.gaussian<span class="hljs-constructor">_filter(<span class="hljs-params">imx</span> <span class="hljs-operator">*</span> <span class="hljs-params">imy</span>, <span class="hljs-params">sigma</span>=0.5)</span><br>wyy = ndimage.gaussian<span class="hljs-constructor">_filter(<span class="hljs-params">imy</span> <span class="hljs-operator">*</span> <span class="hljs-params">imy</span>, <span class="hljs-params">sigma</span>=0.5)</span><br></code></pre></td></tr></table></figure>
 <p>这样就有了每个点的Harris矩阵值，根据要求计算角点强度与方向.</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/charris.jpg" srcset="/img/loading.gif" lazyload class="" title="[C]">
+<img src="/img/charris.jpg" srcset="/img/loading.gif" lazyload class="" title="[C]">
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python">wdet = wxx * wyy - wxy ** <span class="hljs-number">2</span><br>wtr = wxx + wyy<br>harrisImage = wdet - <span class="hljs-number">0.1</span> * (wtr ** <span class="hljs-number">2</span>)<br>orientationImage = np.arctan2(imy, imx)* <span class="hljs-number">180.0</span> / np.pi<br></code></pre></td></tr></table></figure>
 <p>注意这里的角度单位，<code>np.arctan2</code>计算出的是弧度制，转化为角度制。求出每个像素的角点强度与方向后，需要找到在每一个上下左右7*7矩阵中角点强度最大的点，这些点就是我们需要的特征点.（TODO2,3）<br>用到了最大过滤器<code>maximum_filter</code></p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python">destImage = np.zeros_like(harrisImage, np.<span class="hljs-built_in">bool</span>)<br>height = harrisImage.shape[<span class="hljs-number">0</span>]<br>width = harrisImage.shape[<span class="hljs-number">1</span>]<br>maxImage = ndimage.maximum_filter(harrisImage,<span class="hljs-number">7</span>)<br><span class="hljs-keyword">for</span> h <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(height):<br>    <span class="hljs-keyword">for</span> w <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(width):<br>        <span class="hljs-keyword">if</span>(harrisImage[h][w]==maxImage[h][w]):<br>            destImage[h][w]=<span class="hljs-literal">True</span><br>        <span class="hljs-keyword">else</span>:<br>            destImage[h][w]=<span class="hljs-literal">False</span><br><span class="hljs-keyword">return</span> destImage<br></code></pre></td></tr></table></figure>
@@ -295,7 +295,7 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs python">image = image.astype(np.float32)<br>image /= <span class="hljs-number">255.</span><br>grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)<br>height, width = image.shape[:<span class="hljs-number">2</span>]<br>desc = np.zeros((<span class="hljs-built_in">len</span>(keypoints), <span class="hljs-number">5</span> * <span class="hljs-number">5</span>))<br><span class="hljs-keyword">for</span> i, f <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(keypoints):<br>    x, y = f.pt<br>    x, y = <span class="hljs-built_in">int</span>(x), <span class="hljs-built_in">int</span>(y)<br>    num = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(-<span class="hljs-number">2</span>,<span class="hljs-number">3</span>):<br>        <span class="hljs-keyword">for</span> k <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(-<span class="hljs-number">2</span>,<span class="hljs-number">3</span>):<br>            <span class="hljs-keyword">if</span>(y+j&lt;<span class="hljs-number">0</span> <span class="hljs-keyword">or</span> y+j&gt;height-<span class="hljs-number">1</span> <span class="hljs-keyword">or</span> x+k&lt;<span class="hljs-number">0</span> <span class="hljs-keyword">or</span> x+k&gt;width-<span class="hljs-number">1</span>):<br>                desc[i][num] = <span class="hljs-number">0</span><br>            <span class="hljs-keyword">else</span>:<br>                desc[i][num] = grayImage[y+j][x+k]<br>            num+=<span class="hljs-number">1</span><br><span class="hljs-keyword">return</span> desc<br></code></pre></td></tr></table></figure>
 
 <p>2.MOPS描述符，用8*8矩阵存储角度强度朝向右方的40*40邻域</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/MOPS.jpg" srcset="/img/loading.gif" lazyload class="" title="[MOPS]">
+<img src="/img/MOPS.jpg" srcset="/img/loading.gif" lazyload class="" title="[MOPS]">
 <p>分别求出平移、旋转、缩放、平移的仿射变换矩阵，采用齐次坐标<br>第一步平移：让位于图像左上角的坐标(0,0)点移动到计算的中心像素上<br>第二步旋转：将图像绕中心像素旋转，让该点的角点方向朝右<br>第三步缩放：将图像缩小为1&#x2F;8<br>第四步平移：将原点坐标移动到中心像素8*8邻域的左上角像素<br>这样就可以读出该特征点的MOPS描述符（8*8矩阵）</p>
 <p>注意，平移时是对坐标值进行操作，所以让(-4,-4)变为(0,0)是要加4，旋转角度用弧度制。将上述四个仿射矩阵倒序相乘，用<code>cv2.warpAffine</code>实现变换，将结果进行检验，也就是实验说明提到的<strong>将 8*8 图像块规范化为零均值和单位方差</strong>。</p>
 <p>这句话很让人纠结，零均值和单位方差完全是字面意思上的翻译。查了后发现这在数据处理中叫做<strong>中心化</strong>（又叫零均值化）和<strong>标准化</strong>（又叫归一化）。前者是指，让每个数据减去平均值；后者则将中心化后的数据除以标准差。这样做的目的是得到均值为0，标准差为1的标准正态分布。</p>
@@ -311,13 +311,13 @@
 <p>如果是比例测试，则用最小除以第二小作为距离</p>
 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs stylus">de = spatial<span class="hljs-selector-class">.distance</span><span class="hljs-selector-class">.cdist</span>(desc1, desc2, metric=<span class="hljs-string">&#x27;euclidean&#x27;</span>)<br><span class="hljs-keyword">for</span> n, dee <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(de):<br>    d = cv2<span class="hljs-selector-class">.DMatch</span>()<br>    d<span class="hljs-selector-class">.queryIdx</span> = n<br>    m = np<span class="hljs-selector-class">.argmin</span>(de<span class="hljs-selector-attr">[n]</span>)<br>    d<span class="hljs-selector-class">.trainIdx</span> = <span class="hljs-built_in">int</span>(m)<br>    f1 = de<span class="hljs-selector-attr">[n]</span><span class="hljs-selector-attr">[m]</span><br>    de<span class="hljs-selector-attr">[n]</span><span class="hljs-selector-attr">[m]</span> = <span class="hljs-attribute">float</span>(<span class="hljs-string">&quot;inf&quot;</span>)<br>    m = np<span class="hljs-selector-class">.argmin</span>(de<span class="hljs-selector-attr">[n]</span>)<br>    f2 = de<span class="hljs-selector-attr">[n]</span><span class="hljs-selector-attr">[m]</span><br>    d<span class="hljs-selector-class">.distance</span> = f1/f2<br>    matches<span class="hljs-selector-class">.append</span>(d)<br>return matches<br></code></pre></td></tr></table></figure>
 <p>结果测试：</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/pipei.jpg" srcset="/img/loading.gif" lazyload class="" title="[图像匹配]">
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/pipei2.jpg" srcset="/img/loading.gif" lazyload class="" title="[图像匹配2]">
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/ROC.png" srcset="/img/loading.gif" lazyload class="" title="[ROC]">
+<img src="/img/pipei.jpg" srcset="/img/loading.gif" lazyload class="" title="[图像匹配]">
+<img src="/img/pipei2.jpg" srcset="/img/loading.gif" lazyload class="" title="[图像匹配2]">
+<img src="/img/ROC.png" srcset="/img/loading.gif" lazyload class="" title="[ROC]">
 <p>ROC曲线如图，AUC&#x3D; 0.903848</p>
 <h3 id="四、自适应非最大抑制-ANMS"><a href="#四、自适应非最大抑制-ANMS" class="headerlink" title="四、自适应非最大抑制(ANMS)"></a>四、自适应非最大抑制(ANMS)</h3><p>在检测Harris角点（特征值）的时候，在最后加入自适应非最大抑制，让特征值的分布更加均匀。思路：取最大的特征值角点强度rmax，过滤出大于0.9rmax的强特征点，在剩下的角点中，以距强特征点的最小距离为半径r，将这些特征点降序排列，选r最大的若干个特征点。具体代码在github中找到。</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/harrisnoa.jpg" srcset="/img/loading.gif" lazyload class="" title="[无ANMS]">
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/harriswitha.png" srcset="/img/loading.gif" lazyload class="" title="[有ANMS]">
+<img src="/img/harrisnoa.jpg" srcset="/img/loading.gif" lazyload class="" title="[无ANMS]">
+<img src="/img/harriswitha.png" srcset="/img/loading.gif" lazyload class="" title="[有ANMS]">
 <p>明显可以看到，使用了ANMS的特征点分布更加均匀。</p>
 <p>代码地址：<br><a target="_blank" rel="noopener" href="https://github.com/Xiayue09/VisionExp">https://github.com/Xiayue09/VisionExp</a><br>参考文章：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/naive/p/3579610.html">https://www.cnblogs.com/naive/p/3579610.html</a></p>
 

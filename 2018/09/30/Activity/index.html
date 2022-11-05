@@ -23,16 +23,16 @@
 <meta property="og:site_name" content="夏月&#39;s Blog">
 <meta property="og:description" content="一、简介Activity,即活动，Android四大组件之一。  Android四大组件：Activity, Service, BroadcastReciver, ContentProvider.  一个应用通常由多个彼此松散联系的 Activity组成。 当新 Activity启动时，前一Activity便会停止，但系统会在返回栈中保留该Activity。 当新Activity启动时，系统会将其">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/diagram_backstack.png">
-<meta property="og:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/activity_lifecycle.png">
-<meta property="og:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/diagram_backstack_singletask_multiactivity.png">
-<meta property="og:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/configuration.png">
+<meta property="og:image" content="http://www.eteluna.top/img/diagram_backstack.png">
+<meta property="og:image" content="http://www.eteluna.top/img/activity_lifecycle.png">
+<meta property="og:image" content="http://www.eteluna.top/img/diagram_backstack_singletask_multiactivity.png">
+<meta property="og:image" content="http://www.eteluna.top/img/configuration.png">
 <meta property="article:published_time" content="2018-09-30T14:27:00.000Z">
-<meta property="article:modified_time" content="2022-10-28T12:21:35.634Z">
+<meta property="article:modified_time" content="2022-11-05T14:27:21.597Z">
 <meta property="article:author" content="xiayue, eteluna, 程序, 夏月, 夏月凉团">
 <meta property="article:tag" content="Android">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/diagram_backstack.png">
+<meta name="twitter:image" content="http://www.eteluna.top/img/diagram_backstack.png">
   
   
   
@@ -286,7 +286,7 @@
 <p>一个应用通常由多个彼此松散联系的 Activity组成。</p>
 <p>当新 Activity启动时，前一Activity便会停止，但系统会在<strong>返回栈</strong>中保留该Activity。 当新Activity启动时，系统会将其推送到返回栈上，并取得用户焦点。 返回栈遵循<strong>后进先出</strong>堆栈机制。</p>
 <p><strong>注意：返回栈是每个任务单独含有的，与任务管理器不同</strong></p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/diagram_backstack.png" srcset="/img/loading.gif" lazyload class="" title="[返回栈]">
+<img src="/img/diagram_backstack.png" srcset="/img/loading.gif" lazyload class="" title="[返回栈]">
 <h3 id="二、生命周期"><a href="#二、生命周期" class="headerlink" title="二、生命周期"></a><strong>二、生命周期</strong></h3><p>Activity的生命周期相关方法包括：</p>
 <ul>
 <li>onCreate()：创建时调用</li>
@@ -296,7 +296,7 @@
 <li>onStop(): 不在最顶层不可见时调用（新activity、home键）</li>
 <li>onDistory: 退出时调用（back键）</li>
 </ul>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/activity_lifecycle.png" srcset="/img/loading.gif" lazyload class="" title="[生命周期]">
+<img src="/img/activity_lifecycle.png" srcset="/img/loading.gif" lazyload class="" title="[生命周期]">
 
 <p>官方文档描述：</p>
 <blockquote>
@@ -332,7 +332,7 @@
 <li>栈内复用模式（SingleTask）：存在这样的Activity（无论在不在这一个任务中），则将它的任务拿来放在栈顶。</li>
 <li>单例模式（SingleInstance）：该Activity所在任务中只有自身，打开新的Activity都是新建单独的栈。</li>
 </ul>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/diagram_backstack_singletask_multiactivity.png" srcset="/img/loading.gif" lazyload class="" title="[栈内复用]">
+<img src="/img/diagram_backstack_singletask_multiactivity.png" srcset="/img/loading.gif" lazyload class="" title="[栈内复用]">
 <p>以上模式皆在<code>AndroidMainifest</code> <code>launchMode</code> 属性定义。<br>或使用<code>intent</code>设置标记位</p>
 <figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs fortran"><span class="hljs-keyword">intent</span>.addFlags(<span class="hljs-keyword">Intent</span>.FLAG_ACTIVITY_NEW_TASK);<br></code></pre></td></tr></table></figure>
 <p>此方法优先级高于AndroidMainifest</p>
@@ -380,7 +380,7 @@
 <p><code>&lt;data&gt;</code>:<br>使用一个或多个指定数据 URI 各个方面（scheme、host、port、path 等）和 MIME 类型的属性，声明接受的数据类型。<br>例如：</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">activity</span> <span class="hljs-attr">android:name</span>=<span class="hljs-string">&quot;ShareActivity&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">intent-filter</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">action</span> <span class="hljs-attr">android:name</span>=<span class="hljs-string">&quot;android.intent.action.SEND&quot;</span>/&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">category</span> <span class="hljs-attr">android:name</span>=<span class="hljs-string">&quot;android.intent.category.DEFAULT&quot;</span>/&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">data</span> <span class="hljs-attr">android:mimeType</span>=<span class="hljs-string">&quot;text/plain&quot;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">intent-filter</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">activity</span>&gt;</span><br></code></pre></td></tr></table></figure>
 <h3 id="六、处理配置变更"><a href="#六、处理配置变更" class="headerlink" title="六、处理配置变更"></a><strong>六、处理配置变更</strong></h3><p>运行时变更包括以下类型，在发生这些变更时系统会重启正在运行的应用，并通过onSaveInstanceState()恢复之前状态。</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/configuration.png" srcset="/img/loading.gif" lazyload class="" title="[配置变更]">
+<img src="/img/configuration.png" srcset="/img/loading.gif" lazyload class="" title="[配置变更]">
 <p>如果不希望这样做，有两种选择：</p>
 <h4 id="1-当配置改变时维持一个对象"><a href="#1-当配置改变时维持一个对象" class="headerlink" title="1.当配置改变时维持一个对象"></a>1.当配置改变时维持一个对象</h4><p>如果数据很多，它们不会都放bundle中，那么加载起来就会影响到用户体验。</p>
 <h4 id="2-阻止系统重启，自己处理"><a href="#2-阻止系统重启，自己处理" class="headerlink" title="2.阻止系统重启，自己处理"></a>2.阻止系统重启，自己处理</h4><p>这种技术应该被视为最后的手段，对于大多数应用程序不建议使用。<br>具体方法参考<a target="_blank" rel="noopener" href="https://developer.android.com/guide/topics/resources/runtime-changes#RetainingAnObject">官方文档</a>，遇到相关问题再进行总结。</p>

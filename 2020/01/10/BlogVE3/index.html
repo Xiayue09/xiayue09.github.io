@@ -23,13 +23,13 @@
 <meta property="og:site_name" content="夏月&#39;s Blog">
 <meta property="og:description" content="这次实验让我们分别使用平移变换和单应变换（仿射变换）拼接图像，生成全景图。时间过去很久了，简单说一下实验步骤和遇到的问题 一、球面坐标变换使用平移变换需要先求得球面变换坐标，并校正径向畸变。按照公式可得代码 12345678910# 球面座标变换xt &#x3D; np.sin(xf)*np.cos(yf)yt &#x3D; np.sin(yf)zt &#x3D; np.cos(xf)*np.cos(yf)xt &#x3D; xt&#x2F;z">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/BlogVE3.jpg">
+<meta property="og:image" content="http://www.eteluna.top/%5Cimg%5CBlogVE3.jpg">
 <meta property="article:published_time" content="2020-01-10T14:10:00.000Z">
-<meta property="article:modified_time" content="2022-10-28T12:48:52.779Z">
+<meta property="article:modified_time" content="2022-11-05T14:27:21.650Z">
 <meta property="article:author" content="xiayue, eteluna, 程序, 夏月, 夏月凉团">
 <meta property="article:tag" content="视觉">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/BlogVE3.jpg">
+<meta name="twitter:image" content="http://www.eteluna.top/%5Cimg%5CBlogVE3.jpg">
   
   
   
@@ -276,12 +276,12 @@
             
               <div class="markdown-body">
                 
-                <p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/BlogVE3.jpg" srcset="/img/loading.gif" lazyload alt="视觉实验三 全景图"></p>
+                <p><img src="/%5Cimg%5CBlogVE3.jpg" srcset="/img/loading.gif" lazyload alt="视觉实验三 全景图"></p>
 <p>这次实验让我们分别使用平移变换和单应变换（仿射变换）拼接图像，生成全景图。时间过去很久了，简单说一下实验步骤和遇到的问题</p>
 <h3 id="一、球面坐标变换"><a href="#一、球面坐标变换" class="headerlink" title="一、球面坐标变换"></a>一、球面坐标变换</h3><p>使用平移变换需要先求得球面变换坐标，并校正径向畸变。按照公式可得代码</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 球面座标变换</span><br>xt = np.sin(xf)*np.cos(yf)<br>yt = np.sin(yf)<br>zt = np.cos(xf)*np.cos(yf)<br>xt = xt/zt<br>yt = yt/zt<br><span class="hljs-comment"># 校正畸变</span><br>r2=xt**<span class="hljs-number">2</span>+yt**<span class="hljs-number">2</span><br>xt = xt*(<span class="hljs-number">1</span>+k1*r2+k2*r2**<span class="hljs-number">2</span>)<br>yt = yt*(<span class="hljs-number">1</span>+k1*r2+k2*r2**<span class="hljs-number">2</span>)<br></code></pre></td></tr></table></figure>
 <h3 id="二、估计最佳变换矩阵"><a href="#二、估计最佳变换矩阵" class="headerlink" title="二、估计最佳变换矩阵"></a>二、估计最佳变换矩阵</h3><p>首先是求单应变换的方法，对于方程式 Ah &#x3D; 0， 最佳解 h 是 ATA 具有最小特征值的特征向量，其中 AT是 A 的转置。根据线性代数知识，A 的右奇异向量是 ATA 的特征向量 。所以，求右奇异向量就可以了。通过调用<code>np.linalg.svd()</code>,实现矩阵的SVD分解。A矩阵如图所示</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/Ajuzhen.jpg" srcset="/img/loading.gif" lazyload class="" title="[A矩阵]">
+<img src="/img/Ajuzhen.jpg" srcset="/img/loading.gif" lazyload class="" title="[A矩阵]">
 
 <p>之后是使用RANSAC估计最佳变换矩阵。判断使用平移变换还是仿射变换，执行步骤</p>
 <blockquote>
@@ -298,13 +298,13 @@
 <p>在这一步上纠结了将近一周，原因是没有注意到要用反向卷绕。反向卷绕是遍历生成图像的每个点，用变换矩阵的逆矩阵求出点在原图像的坐标，用这样的反向卷绕能很好的解决插值问题（直接在变换时加个参数就好）。如果是正向卷绕，生成图像上会有很多点被漏掉，再自己做插值处理就比较麻烦。</p>
 <p>之后就是规范化和处理漂移问题。漂移这里我直接用了一个投影矩阵来实现生成图像的修正。</p>
 <p>最终结果：<br>平移(translation)</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/yosemite_translation.jpg" srcset="/img/loading.gif" lazyload class="" title="[translation]">
+<img src="/img/yosemite_translation.jpg" srcset="/img/loading.gif" lazyload class="" title="[translation]">
 
 <p>单应(homography)</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/yosemite_homography.jpg" srcset="/img/loading.gif" lazyload class="" title="[homography]">
+<img src="/img/yosemite_homography.jpg" srcset="/img/loading.gif" lazyload class="" title="[homography]">
 
 <p>360度全景图</p>
-<img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/campus__translation.jpg" srcset="/img/loading.gif" lazyload class="" title="[campus]">
+<img src="/img/campus__translation.jpg" srcset="/img/loading.gif" lazyload class="" title="[campus]">
 
 <p>代码地址：<br><a target="_blank" rel="noopener" href="https://github.com/Xiayue09/VisionExp">https://github.com/Xiayue09/VisionExp</a></p>
 

@@ -23,14 +23,14 @@
 <meta property="og:site_name" content="夏月&#39;s Blog">
 <meta property="og:description" content="重新学习 Java 并发，本文包括线程的创建，线程的状态切换方法，守护线程。 As We All Know进程是系统分配资源和调度的基本单位线程是在 CPU 上运行的基本单位 在 Java 中，启动 main 函数即启动一个 JVM 进程，main 函数的线程是这个进程的一个线程，也称主线程。线程有自己的程序计数器（执行位置）和栈（局部变量）；进程有堆与方法区，前者存放 new 的对象实例，后者">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/java1.jpg">
+<meta property="og:image" content="http://www.eteluna.top/img/java1.jpg">
 <meta property="article:published_time" content="2020-03-16T11:50:23.000Z">
-<meta property="article:modified_time" content="2022-10-28T12:47:00.071Z">
+<meta property="article:modified_time" content="2022-11-05T14:27:21.692Z">
 <meta property="article:author" content="xiayue, eteluna, 程序, 夏月, 夏月凉团">
 <meta property="article:tag" content="笔记">
 <meta property="article:tag" content="java">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/java1.jpg">
+<meta name="twitter:image" content="http://www.eteluna.top/img/java1.jpg">
   
   
   
@@ -277,7 +277,7 @@
             
               <div class="markdown-body">
                 
-                <p><img src="https://eteluna.oss-cn-shanghai.aliyuncs.com/img/java1.jpg" srcset="/img/loading.gif" lazyload alt="Java并发(1)线程基础"></p>
+                <p><img src="/img/java1.jpg" srcset="/img/loading.gif" lazyload alt="Java并发(1)线程基础"></p>
 <p>重新学习 Java 并发，本文包括线程的创建，线程的状态切换方法，守护线程。</p>
 <p><strong>As We All Know</strong><br/><strong>进程是系统分配资源和调度的基本单位</strong><br/><strong>线程是在 CPU 上运行的基本单位</strong></p>
 <p>在 Java 中，启动 main 函数即启动一个 JVM 进程，main 函数的线程是这个进程的一个线程，也称主线程。线程有自己的<strong>程序计数器</strong>（执行位置）和<strong>栈</strong>（局部变量）；进程有<strong>堆</strong>与<strong>方法区</strong>，前者存放 new 的对象实例，后者存放 JVM 加载的类、常量、静态变量，他们都是线程共享的。</p>
